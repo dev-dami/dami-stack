@@ -32,8 +32,11 @@ function main() {
   const script = /\.(cmd|bat)$/i.test(file);
   const quote = (a) => (/\s/.test(a) ? `"${a}"` : a);
 
+  // The asking session's identity must not leak into the new agent: a child-session marker
+  // turns off its transcript, and a session id or messaging pipe would point at the wrong session.
   const env = { ...process.env, DAMI_AGENT: `${run.kind}-${id}`, DAMI_RUN: id };
-  delete env.CLAUDECODE;
+  const inherited = /^(CLAUDECODE|CLAUDE_PID|CLAUDE_CODE_(CHILD_SESSION|SESSION_|HOST_|MESSAGING_|ENTRYPOINT|TERMINAL_MCP_TOOLS|DESKTOP_)|CLAUDE_AGENT_SDK_)/;
+  Object.keys(env).filter((key) => inherited.test(key)).forEach((key) => { delete env[key]; });
   const child = spawn(script ? quote(file) : file, script ? args.map(quote) : args, {
     cwd: run.cwd, env, shell: script, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'],
   });

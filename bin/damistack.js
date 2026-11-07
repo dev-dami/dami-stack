@@ -12,7 +12,7 @@ const SESSION = process.env.DAMISTACK_SESSION ? ['--session', process.env.DAMIST
 const STACK = path.resolve(__dirname, '..');
 const SETTINGS_FILE = path.join(os.tmpdir(), 'dami-stack-settings.json');
 
-const color = process.stdout.isTTY && !process.env.NO_COLOR;
+const color = (process.stdout.isTTY || Boolean(process.env.FORCE_COLOR)) && !process.env.NO_COLOR;
 const paint = (code) => (text) => (color ? `\x1b[${code}m${text}\x1b[0m` : text);
 const accent = paint('38;5;209');
 const dim = paint('2');
@@ -34,8 +34,7 @@ const warn = (label, detail) => row(yellow('!'), label, detail);
 const fail = (label, detail) => row(red('✗'), label, detail);
 
 function banner() {
-  console.log(`\n  ${accent(bold('dami stack'))} ${dim(`v${pkg.version}`)}`);
-  console.log(`  ${dim(`${plugin.skills.length} proactive skills. Type /dami:help inside for commands.`)}\n`);
+  console.log(`\n  ${accent(bold('dami stack'))} ${dim(`v${pkg.version}`)}\n`);
 }
 
 // Finds a command on PATH. npm-installed tools on Windows are .cmd files, which need a shell.

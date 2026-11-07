@@ -2,7 +2,65 @@
 
 Damilare's work protocol for coding agents, as a Claude Code plugin and a set of skills Codex and OpenCode can read too.
 
-It isn't a shelf of separate skills. Each block takes and gives a typed artifact, so any output can feed any input, and the same block runs with the dami hub, host subagents, Herdr or alone. Twenty-one blocks share one gate list and one finish check rather than restating them.
+It isn't a shelf of separate skills. Each block takes and gives a typed artifact, so any output can feed any input, and the same block runs with the dami hub, host subagents, Herdr or alone. They share one gate list and one finish check rather than restating them.
+
+![A real Claude Code session asking Codex through the dami hub](docs/media/hub.gif)
+
+*A real Claude Code session asking Codex through the dami hub, sped up. Claude checks the file itself before passing Codex's answer on.*
+
+## Quick start
+
+**1. Install the plugin in Claude Code.**
+
+```bash
+claude plugin marketplace add dev-dami/dami-stack
+```
+
+```bash
+claude plugin install dami@dami-stack
+```
+
+**2. Add the `damistack` command.**
+
+```bash
+git clone https://github.com/dev-dami/dami-stack.git
+```
+
+```bash
+cd dami-stack && npm link
+```
+
+**3. Share the skills and the hub with Codex and OpenCode.** This also lets Codex use the hub in headless runs.
+
+```bash
+damistack link
+```
+
+**4. Check that everything is found.**
+
+```bash
+damistack status
+```
+
+![damistack status](docs/media/status.png)
+
+**5. Start a new Claude Code session and type `/dami:help`.**
+
+![/dami:help in Claude Code](docs/media/help.png)
+
+**6. Work as usual.** Skills fire on their own when the work calls for them. Here, a flaky test brings in `root-cause-hunt` without being asked:
+
+![A skill firing on its own](docs/media/proactive.png)
+
+**7. Ask another agent.** Tell Claude to ask Codex or OpenCode through the hub, as in the recording above. `damistack team` shows who is working and what ran:
+
+```bash
+damistack team
+```
+
+![damistack team](docs/media/team.png)
+
+Every image here is a capture of a real session, made with the scripts in `scripts/capture`.
 
 ## The idea
 
