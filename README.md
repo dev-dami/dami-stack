@@ -110,19 +110,14 @@ The hub keeps state per repo in `~/.dami/hub`, shared by every worktree. Runs ke
 
 ## Install
 
-### Plugin from the private GitHub repo
+### Plugin
 
-Claude Code reads a private repo with your own git credentials, so check those first. `gh auth status` should show you signed in, or your SSH key should reach GitHub.
-
-```
+```bash
 claude plugin marketplace add dev-dami/dami-stack
+```
+
+```bash
 claude plugin install dami@dami-stack
-```
-
-If the short form can't reach the repo, use the SSH address:
-
-```
-claude plugin marketplace add git@github.com:dev-dami/dami-stack.git
 ```
 
 Inside Claude Code the same steps are `/plugin marketplace add dev-dami/dami-stack` and `/plugin install dami@dami-stack`. Start a new session, then run `/dami:help`.
@@ -134,7 +129,7 @@ To pick up a new version, run `claude plugin marketplace update dami-stack` and 
 The plugin doesn't put `damistack` on your PATH. Clone the repo and link it:
 
 ```
-git clone git@github.com:dev-dami/dami-stack.git
+git clone https://github.com/dev-dami/dami-stack.git
 cd dami-stack
 npm link
 ```
