@@ -1,0 +1,32 @@
+{
+  "name": "dami",
+  "version": "3.0.0",
+  "description": "A multi-agent operating system of composable skills for Claude Code, Codex and OpenCode.",
+  "author": {
+    "name": "Damilare Osibanjo"
+  },
+  "license": "MIT",
+  "skills": [
+    "./skills/ground/house-rules",
+    "./skills/ground/shared-words",
+    "./skills/ground/module-depth",
+    "./skills/ground/agent-prose",
+    "./skills/settle/question-tree",
+    "./skills/settle/source-trail",
+    "./skills/settle/throwaway-spike",
+    "./skills/settle/work-chart",
+    "./skills/settle/intake-desk",
+    "./skills/make/failing-test-first",
+    "./skills/make/root-cause-hunt",
+    "./skills/crew/crew-lead",
+    "./skills/crew/baton-pass",
+    "./skills/prove/finish-line",
+    "./skills/prove/merge-case",
+    "./skills/tend/repo-fitting",
+    "./skills/tend/after-action",
+    "./skills/tend/walk-me-through",
+    "./skills/tend/automation-blueprint",
+    "./skills/craft/article-workshop",
+    "./skills/craft/purposeful-tutor"
+  ]
+}

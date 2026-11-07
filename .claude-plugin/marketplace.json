@@ -1,0 +1,14 @@
+{
+  "name": "dami-stack",
+  "description": "A multi-agent operating system of composable skills for Claude Code, Codex and OpenCode.",
+  "owner": {
+    "name": "Damilare Osibanjo"
+  },
+  "plugins": [
+    {
+      "name": "dami",
+      "source": "./",
+      "description": "A multi-agent operating system of composable skills for Claude Code, Codex and OpenCode."
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "name": "dami-stack",
+  "version": "3.0.0",
+  "description": "21 composable skills for multi-agent work across Claude Code, Codex and OpenCode, plus /dami: commands.",
+  "license": "MIT",
+  "author": "Damilare Osibanjo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dev-dami/dami-stack.git"
+  },
+  "homepage": "https://github.com/dev-dami/dami-stack#readme",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "skills",
+    "agent-skills",
+    "herdr",
+    "multi-agent",
+    "deck",
+    "codex",
+    "opencode"
+  ],
+  "bin": {
+    "damistack": "bin/damistack.js",
+    "dami-stack": "bin/damistack.js"
+  },
+  "scripts": {
+    "test": "node bin/check-stack.js"
+  },
+  "files": [
+    ".claude-plugin",
+    "bin",
+    "commands",
+    "hooks",
+    "skills"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}
