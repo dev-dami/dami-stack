@@ -2,7 +2,7 @@
 
 Damilare's work protocol for coding agents, as a Claude Code plugin and a set of skills Codex and OpenCode can read too.
 
-It isn't a shelf of separate skills. Each block takes and gives a typed artifact, so any output can feed any input, and the same block runs on Deck, on host subagents, on Herdr or alone. Twenty-one blocks share one gate list and one finish check rather than restating them.
+It isn't a shelf of separate skills. Each block takes and gives a typed artifact, so any output can feed any input, and the same block runs with the dami hub, host subagents, Herdr or alone. Twenty-one blocks share one gate list and one finish check rather than restating them.
 
 ## The idea
 
@@ -16,10 +16,12 @@ It isn't a shelf of separate skills. Each block takes and gives a typed artifact
 
 | Level | Test |
 |---|---|
-| deck | The `deck` MCP server is present and `thread.roster` answers |
+| hub | The dami hub's `team_ask` tool is available |
 | host | The agent has its own subagent tool |
 | herdr | `HERDR_ENV=1`, or `herdr agent list` works |
 | solo | None of the above |
+
+Inside the Deck app, an optional adapter in `house-rules` maps the same moves to Deck's tools. Nothing depends on it.
 
 Levels degrade per move, so a block written once still runs as a plain sequence with nobody else around, and says which level it used.
 
@@ -30,6 +32,23 @@ Levels degrade per move, so a block written once still runs as a plain sequence 
 **The bench.** `~/.dami/bench/<repo id>/` is local scratch that survives sessions and is shared across worktrees: a board, packets, reports, charts and notes.
 
 The rules themselves live in one skill, `house-rules`: `gates.md`, `levels.md`, `artifacts.md` and `routes.md`.
+
+## The hub
+
+The dami hub is a small MCP server, plain Node with no dependencies, that lets the agents working in one repo act as a team. Claude Code gets it from the plugin, Codex and OpenCode from `damistack link`, and any other MCP client from the settings `damistack mcp` prints.
+
+| Tool | What it does |
+| --- | --- |
+| `team_ask` | Starts another agent (Claude Code, Codex or OpenCode) headless with a message, and returns its reply. Read or write mode, optionally on its own git worktree |
+| `team_run` | Checks a run, reads its reply, or stops it |
+| `team_send`, `team_inbox` | Messages between agents that are already running. Replies from runs land in the inbox too |
+| `team_roster` | Who is connected, which agents can be started, what is running |
+| `board` | A shared task board where a task waits for its blockers and only one agent can claim it |
+| `lease` | Claims on files, so parallel agents don't edit the same thing |
+| `note` | Short team notes pinned to files |
+| `skills` | Lists and reads the skills, for clients that have no copy |
+
+The hub keeps state per repo in `~/.dami/hub`, shared by every worktree. Runs keep going if the agent that asked exits, and the reply waits in its inbox. Two brakes stop agents from starting each other in a loop: at most 3 runs at once, and 24 in ten minutes. A headless agent can't ask you anything, so it reports what it needs instead. `damistack team` shows the current agents, runs, board and claimed files.
 
 ## Install
 
@@ -64,7 +83,7 @@ npm link
 
 ### Codex and OpenCode
 
-They have no plugin here, so they read skills from `~/.agents/skills`. `damistack link` puts them there. They see each skill's description, but they don't get the routing map, because that comes from a Claude Code hook. An always-on map on those CLIs needs a pointer line in the instruction file each one reads, which hasn't been set up.
+They read the skills from `~/.agents/skills` and join the hub as an MCP server. `damistack link` does both, and leaves anything that isn't ours alone. The hub hands them the routing map when they connect, and the line in your `AGENTS.md` makes sure they read it.
 
 ## Commands
 
@@ -154,15 +173,17 @@ An optional launcher that opens Claude Code with dami stack, inside Herdr when H
 ```
 damistack              Open dami stack in this folder
 damistack <folder>     Open dami stack in that folder
-damistack status       Check Claude Code, Herdr, Deck, Codex and OpenCode
-damistack link         Link each skill into ~/.agents/skills, skipping anything not ours
+damistack status       Check Claude Code, Herdr, Codex and OpenCode
+damistack team         See this repo's agents, runs, board and claimed files
+damistack link         Share the skills and hub with Codex and OpenCode
+damistack mcp          Print hub settings for any other MCP client
 damistack help         Show this help
 damistack --version    Show the version
 ```
 
 It uses your normal Herdr session. Set `DAMISTACK_SESSION` to use another.
 
-`damistack status` shows which levels and agent kinds a run can use.
+`damistack status` shows which agent kinds a run can start.
 
 `damistack link` points `~/.agents/skills/<skill>` at each skill folder, with directory junctions on Windows, so no admin rights are needed. It never overwrites anything. A name already taken by something that isn't ours is skipped and reported. It is optional: leave it alone if you place skills there another way.
 

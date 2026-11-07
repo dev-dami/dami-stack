@@ -177,12 +177,99 @@ function status() {
     }
   }
 
-  // These decide which levels and agent kinds a run can use.
-  [['Deck', 'deck'], ['Codex', 'codex'], ['OpenCode', 'opencode']].forEach(([label, name]) => {
+  // These decide which agent kinds a run can start.
+  [['Codex', 'codex'], ['OpenCode', 'opencode']].forEach(([label, name]) => {
     if (which(name)) ok(label, 'installed');
     else warn(label, 'not installed');
   });
+  if (which('deck')) ok('Deck', 'installed, optional');
   console.log('');
+  return 0;
+}
+
+function hubEntry() {
+  return { command: process.execPath, args: [path.join(STACK, 'bin', 'dami-mcp.js')] };
+}
+
+// Headless Codex runs refuse MCP calls that need approval, so the hub's tools are pre-approved.
+// Gates still apply: they live in the skills, not in Codex's approval prompt.
+function approveHubInCodex() {
+  const file = path.join(process.env.CODEX_HOME || path.join(os.homedir(), '.codex'), 'config.toml');
+  const text = fs.readFileSync(file, 'utf8');
+  const start = text.search(/^\[mcp_servers\.dami\]\s*$/m);
+  if (start < 0) return false;
+  const rest = text.slice(start + 1);
+  const next = rest.search(/^\[/m);
+  const end = next < 0 ? text.length : start + 1 + next;
+  if (/^default_tools_approval_mode\s*=/m.test(text.slice(start, end))) return true;
+  const block = text.slice(start, end).replace(/\s*$/, '\ndefault_tools_approval_mode = "approve"\n\n');
+  fs.writeFileSync(file, text.slice(0, start) + block + text.slice(end));
+  return true;
+}
+
+function registerCodex() {
+  if (!which('codex')) return ['Codex', null, 'not installed'];
+  const known = run('codex', ['mcp', 'get', 'dami'], { encoding: 'utf8' }).status === 0;
+  if (!known) {
+    const { command, args } = hubEntry();
+    const added = run('codex', ['mcp', 'add', 'dami', '--', command, ...args], { encoding: 'utf8' });
+    if (added.status !== 0) return ['Codex', false, `failed: ${added.stderr}`.trim()];
+  }
+  if (!approveHubInCodex()) return ['Codex', false, 'registered, but could not pre-approve the hub tools'];
+  return ['Codex', true, known ? 'already registered, hub tools approved' : 'registered, hub tools approved'];
+}
+
+// One new key goes into OpenCode's config, and nothing else in it changes.
+function registerOpenCode() {
+  const file = path.join(os.homedir(), '.config', 'opencode', 'opencode.json');
+  if (!fs.existsSync(file)) return ['OpenCode', null, 'no config file'];
+  let config;
+  try {
+    config = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return ['OpenCode', false, 'config is not plain JSON, add the entry from `damistack mcp` by hand'];
+  }
+  config.mcp = config.mcp || {};
+  const servers = config.mcp.servers || config.mcp;
+  if (servers.dami) return ['OpenCode', true, 'already registered'];
+  const { command, args } = hubEntry();
+  servers.dami = { type: 'local', command: [command, ...args] };
+  fs.writeFileSync(file, `${JSON.stringify(config, null, 2)}\n`);
+  return ['OpenCode', true, 'registered'];
+}
+
+function registerHub() {
+  [registerCodex(), registerOpenCode()].forEach(([label, state, detail]) => {
+    if (state === true) ok(label, detail);
+    else if (state === false) fail(label, detail);
+    else warn(label, detail);
+  });
+}
+
+// Settings for any other MCP client.
+function mcp() {
+  console.log(JSON.stringify({ mcpServers: { dami: hubEntry() } }, null, 2));
+  return 0;
+}
+
+// What the hub knows about this repo.
+function team() {
+  banner();
+  const { hubDir, withState } = require('../mcp/store');
+  const state = withState(hubDir(process.cwd()), (s) => s);
+  const recent = Date.now() - 10 * 60000;
+  const agents = Object.entries(state.agents).filter(([, a]) => !a.left && a.seen > recent);
+  const runs = Object.entries(state.runs).slice(-8);
+  const leases = state.leases.filter((l) => l.until > Date.now());
+  const section = (title, lines, empty) => {
+    console.log(`  ${bold(title)}`);
+    (lines.length ? lines : [dim(empty)]).forEach((line) => console.log(`    ${line}`));
+    console.log('');
+  };
+  section('Agents', agents.map(([name]) => name), 'none connected');
+  section('Runs', runs.map(([id, r]) => `${id.padEnd(6)}${r.kind.padEnd(10)}${r.status.padEnd(11)}${dim(`from ${r.from}`)}`), 'none yet');
+  section('Board', state.tasks.map((t) => `${t.id.padEnd(6)}${t.status.padEnd(9)}${t.title}${t.owner ? dim(`  ${t.owner}`) : ''}`), 'empty');
+  section('Claimed files', leases.map((l) => `${l.path}${dim(`  ${l.owner}`)}`), 'none');
   return 0;
 }
 
@@ -229,6 +316,8 @@ function link() {
   });
 
   console.log(`\n  ${dim(`${plugin.skills.length - skipped} of ${plugin.skills.length} skills in ${tilde(root)}`)}\n`);
+  registerHub();
+  console.log('');
   return 0;
 }
 
@@ -237,8 +326,10 @@ function help() {
   console.log(`  ${bold('Usage')}
     damistack              Open dami stack in this folder
     damistack <folder>     Open dami stack in that folder
-    damistack status       Check Claude Code, Herdr, Deck, Codex and OpenCode
-    damistack link         Link each skill into ~/.agents/skills, skipping anything not ours
+    damistack status       Check Claude Code, Herdr, Codex and OpenCode
+    damistack team         See this repo's agents, runs, board and claimed files
+    damistack link         Share the skills and hub with Codex and OpenCode
+    damistack mcp          Print hub settings for any other MCP client
     damistack help         Show this help
     damistack --version    Show the version
 `);
@@ -252,6 +343,8 @@ const commands = {
   '-h': help,
   status,
   link,
+  mcp,
+  team,
   version,
   '--version': version,
   '-v': version,

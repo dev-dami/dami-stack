@@ -34,11 +34,12 @@ Run this after dispatched work, in the role of checker. The checker comes from t
 1. Take the worker's report as claims. Everything in it is `[reported]`.
 2. Re-run its key checks yourself: the commands under `Evidence` and the card's `Accept` checks. Each one you re-run becomes `[observed]`. One you couldn't run stays `[reported]`, with the reason.
 3. Run steps 1 to 6, with the worker's change as the diff. Add `## Rules findings` and `## Intent findings` to the report, kept separate.
-4. Give the verdict. You report what you find and leave the fixing to the worker.
-   - On deck, end with an op, since a reply alone doesn't answer. `review.approve {id, note}` when there is no breach, nothing missing, and every key check was re-run. Otherwise `review.changes {id, notes}`, with exactly what must change.
-   - Elsewhere, put the verdict in the report's `status` and `Result`.
+4. Give the verdict in the report's `status` and `Result`. You report what you find and leave the fixing to the worker.
+   - Approve when there is no breach, nothing missing, and every key check was re-run.
+   - If a read-only run kept you from a key check, mark the report `partial` and name the check, so the lead runs it before landing.
+   - Otherwise say exactly what must change.
 
-After two rounds of changes the work goes to the user. Judgement calls go in the note and don't hold back an approval. Check another agent's work only. If the work is your own, the most this can record is `independent: self`.
+After two rounds of changes the work goes to the user. Judgement calls go in the report and don't hold back an approval. Check another agent's work only. If the work is your own, the most this can record is `independent: self`.
 
 ## Done when
 
@@ -48,4 +49,4 @@ After two rounds of changes the work goes to the user. Judgement calls go in the
 - Findings are separate and unranked, with counts and the worst per lens.
 - A review the user asked for changed no files.
 - Self-started: clear in-scope defects are fixed and re-checked.
-- Checker mode: `independent` is filled, each key check is re-run or marked `[reported]` with why, and on deck the review op was called.
+- Checker mode: `independent` is filled, each key check is re-run or marked `[reported]` with why, and the verdict is in the report.

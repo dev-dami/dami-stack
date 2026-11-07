@@ -21,7 +21,7 @@ To follow that phrase:
 
 - Claude Code: load the skill by name. Its base directory holds its files.
 - Codex, OpenCode: open `~/.agents/skills/<name>/SKILL.md`. Its files sit beside it.
-- Any agent inside Deck: `skills.read {name, file?}`, which also works across kinds.
+- Any MCP client: read it with the dami hub's `skills` tool. With no arguments it lists the skills, and `{name, file}` reads one.
 
 ## Roles
 
@@ -57,7 +57,8 @@ Workers and scouts send questions up through `Open` and gate needs through `Need
 ## Files
 
 - `gates.md`: what needs the user's OK, how to ask, and the reminder line. Read before anything outward or hard to undo.
-- `levels.md`: level detection, the tools behind each team move, the check ladder, Deck limits. Read before the first team move.
+- `levels.md`: level detection, the tools behind each team move, the hub's limits, the check ladder. Read before the first team move.
+- `deck-adapter.md`: what changes inside a Deck thread. Read it only when `levels.md` sends you there.
 - `artifacts.md`: artifact shapes, packet, report, evidence labels, ref forms, bench layout. Read before writing or receiving any artifact.
 - `routes.md`: routes, the navigator, every block and command. Read when unsure what fits.
 - `routing-map.md`: the always-on summary a session hook injects on Claude Code. Skip it if it is already in your context.

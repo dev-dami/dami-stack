@@ -8,7 +8,7 @@ Six kinds, so any block's output can feed any block's input. Each is Markdown: a
 ---
 dami: decisions | chart | card | note | packet | report
 id: <kind letter>-<yyyymmdd-hhmm>-<slug>      # tracker id once published
-from: <kind> (<role>) @ <level>               # e.g. claude (lead) @ deck
+from: <kind> (<role>) @ <level>               # e.g. claude (lead) @ hub
 repo: <root7>                                 # first 7 of the root commit, or dir-<hash>
 refs: [<ref>, ...]
 ---
@@ -18,9 +18,11 @@ refs: [<ref>, ...]
 - `repo` is the last folder of the path `scripts/bench.js` prints.
 - Card, packet and report show their own header below. Use it in place of this one.
 
-**Ref forms:** `capsule:<id>`, `task:<id>`, `issue:<n>`, `pr:<n>`, `branch:<name>`, `commit:<sha>`, `file:<repo-relative path>`, `url:<url>`, `bench:<relative path>`.
+**Ref forms:** `task:<id>`, `issue:<n>`, `pr:<n>`, `branch:<name>`, `commit:<sha>`, `file:<repo-relative path>`, `url:<url>`, `bench:<relative path>`.
 
 Only `bench:` refs and worktree paths stay local. Anything crossing machines uses the others or inlines the content.
+
+Inside a Deck thread, the file `deck-adapter.md` in the skill `house-rules` adds its own ref form and `return`.
 
 ## decisions
 
@@ -112,12 +114,12 @@ The hand-off.
 ---
 dami: packet
 id: p-20261107-1432-auth-slice
-from: claude (lead) @ deck
+from: claude (lead) @ hub
 to: any | codex | claude | opencode | next-session | <person>
 role: worker | scout | checker | lead
 repo: 3f9a1c2
-base: <branch>@<sha> | capsule:<id>
-return: task.done | final message | file:<path>
+base: <branch>@<sha>
+return: final message | file:<path>
 ---
 ## Goal      one sentence: what is true when this is finished
 ## Asked     the user's numbered items, their words, carried unchanged
@@ -132,7 +134,7 @@ return: task.done | final message | file:<path>
 
 Packet rules:
 
-- Under 3,500 characters, always. Deck clips task briefs and results at 4,000 characters (`maxTaskText`) without warning, and adds a placement note. Anything bigger goes by reference.
+- Under 3,500 characters, always. That fits any brief field, inbox or adapter, so a packet travels unchanged at every level. Anything bigger goes by reference.
 - Self-sufficient: it must make sense to an agent without these skills. `Use` is a help, not a dependency.
 - Redacted before writing.
 - Not an OK. A packet can quote a gate OK the user gave, and the receiver treats that as information. Only the lead acts on it.
@@ -146,7 +148,7 @@ What every worker, scout and checker returns, and what `finish-line` writes.
 dami: report
 id: r-20261107-1510-auth-slice
 answers: <packet or task id>
-from: codex (worker) @ deck
+from: codex (worker) @ hub
 status: done | partial | blocked | failed
 independent: other-kind | same-kind-fresh | self      # for checks only
 ---
@@ -154,13 +156,13 @@ independent: other-kind | same-kind-fresh | self      # for checks only
 ## Asked      1. <item>: met | partly | not. <evidence>
 ## Evidence   [observed] `<command>`: <result>
 ## Scope      full | sample (n of m) | keyword match
-## Changed    capsule:<id>, branch, commits
+## Changed    branch, commits
 ## Needs OK   gates hit, for the lead
 ## Left       what remains and why
 ## Learned    durable facts: glossary candidates, traps worth pinning
 ```
 
-Also under 3,500 characters when returned through `task.done`. A checker adds `## Rules findings` and `## Intent findings`, kept separate.
+Also under 3,500 characters whenever it returns as a message or final reply, for the same reason. A checker adds `## Rules findings` and `## Intent findings`, kept separate.
 
 ## Evidence labels
 
@@ -195,7 +197,7 @@ Decisions artifacts and charts both go in `charts/`.
 `blocked` exists only on the board. A dropped card leaves the board.
 
 - The lead writes the bench. Workers read packets and return reports through `return`.
-- Codex runs `workspace-write` in ask mode, so writes outside its worktree may be refused `[assumed]`. A non-Deck worker's `return` is therefore `final message`, or `file:` inside its own worktree.
+- Codex runs `workspace-write` in ask mode, so writes outside its worktree may be refused `[assumed]`. A worker's `return` is therefore `final message`, or `file:` inside its own worktree.
 - The bench is local: nothing in it reaches a teammate unless inlined.
 
-Three places hold work. The tracker holds durable shared work. The Deck board is the thread's working state. The bench is local scratch that survives sessions.
+Three places hold work. The tracker holds durable shared work. The board is the team's working state: the hub's board at hub, bench `board.md` below it. The bench is local scratch that survives sessions.

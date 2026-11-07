@@ -13,7 +13,7 @@ The aim is to remove causes. A repeated warning isn't a fix. This block proposes
 ## Steps
 
 1. Use the skill `agent-prose`, since most proposals touch something an agent reads.
-2. Read the actual session, not a memory of it. If the current session is gone or compressed, look back through the log. On deck, also read skill use, thread history, overlap notices, review bounces, budget blocks and limit pauses. A brief that needed three steers is a finding about the brief.
+2. Read the actual session, not a memory of it. If the current session is gone or compressed, look back through the log. Also read what the team left: run outcomes, timeouts, lease clashes, check bounces and limit refusals. A brief that needed three steers is a finding about the brief.
 3. Walk these lenses and collect candidates, each with the event that shows it.
 
    | Lens | Look for | Usual proposal |
