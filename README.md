@@ -172,6 +172,6 @@ It uses your normal Herdr session. Set `DAMISTACK_SESSION` to use another.
 
 ## Credits
 
-Designed and written independently for Damilare Osibanjo. The idea of agent skills as an engineering practice owes a debt to [mattpocock/skills](https://github.com/mattpocock/skills) (MIT): a behaviour-only specification was taken from that work, and these skills were then written from scratch without access to its text. Not affiliated with or endorsed by Matt Pocock.
+Designed and written for Damilare Osibanjo. Inspired by [Matt Pocock's skills](https://github.com/mattpocock/skills).
 
 Deep modules come from John Ousterhout, seams from Michael Feathers, red-green testing from Kent Beck, code smells from Martin Fowler, tracer bullets from Hunt and Thomas, and decision records from Michael Nygard.
