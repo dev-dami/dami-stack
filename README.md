@@ -60,6 +60,12 @@ damistack team
 
 ![damistack team](docs/media/team.png)
 
+**8. Optional: connect your VPS.** This walks you through Tailscale, a key, and Claude Code on the server. After that, agents can hand it work and you can drive it with Remote Control:
+
+```bash
+damistack connect vps
+```
+
 Every image here is a capture of a real session, made with the scripts in `scripts/capture`.
 
 ## The idea
@@ -109,20 +115,33 @@ The dami hub is a small MCP server, plain Node with no dependencies, that lets t
 
 ### Remote hosts
 
-The hub can hand work to another machine, such as a VPS, over key-only ssh. A Tailscale address keeps ssh off the public internet. Register the machine once:
+The hub can hand work to another machine, such as a VPS, over key-only ssh. Tailscale keeps that ssh off the public internet. One command walks you through connecting it:
 
 ```bash
-damistack host add contabo
+damistack connect vps
 ```
 
-The name is an alias from `~/.ssh/config`, or pass the ssh target as a second argument. The hub checks it can log in without a password, and records which agents are installed there.
+| Step | What happens |
+|---|---|
+| Local tools | Checks for ssh and Tailscale |
+| Find the machine | Lists the Linux machines on your tailnet. A machine that isn't on it yet can join over its public address: you approve it in the browser |
+| Key | Makes `~/.ssh/dami_vps`, a key for this machine only |
+| Let the key in | Adds the key. You type the server password into ssh once, and dami stack never sees it |
+| ssh shortcut | Adds `Host vps` to `~/.ssh/config`, after a backup |
+| Lock it down | Offers to turn password login off, and tells you if the firewall still lets ssh in from the internet |
+| Claude Code there | Installs it with the official installer and signs it in, if needed |
+| Join the hub | Registers the host, and can start Remote Control |
 
-After that, `team_ask` with `host: "contabo"` runs the agent there. Your working folder goes up with git, uncommitted edits and new files included, minus what `.gitignore` leaves out. The agent works on its own worktree in `~/dami` on the host. In write mode its commit comes back here as a branch such as `dami/contabo-r3`, and your own tree and index are never touched. The remote worktree is removed when the run ends.
+Every step checks first and skips what is already done, so it is safe to run again. Nothing changes on either machine without a yes. In Claude Code, `/dami:connect` does the same: the agent does what it can and hands you this command for the steps that need you.
+
+If key-only ssh already works, `damistack host add vps` registers the machine without the walk-through.
+
+After that, `team_ask` with `host: "vps"` runs the agent there. Your working folder goes up with git, uncommitted edits and new files included, minus what `.gitignore` leaves out. The agent works on its own worktree in `~/dami` on the host. In write mode its commit comes back here as a branch such as `dami/vps-r3`, and your own tree and index are never touched. The remote worktree is removed when the run ends.
 
 Remote Control on the host lets you drive sessions there from claude.ai/code or the Claude app:
 
 ```bash
-damistack host rc contabo start
+damistack host rc vps start
 ```
 
 It runs in tmux on the host, in this repo's copy there, and starts each session on its own worktree. `status` and `stop` do what they say. Agents can do the same with `team_host`.
@@ -161,7 +180,7 @@ They read the skills from `~/.agents/skills` and join the hub as an MCP server. 
 
 ## Commands
 
-All 14 are one word, under the plugin's `/dami:` prefix. Skills always contain a hyphen, so the two can't collide.
+All 15 are one word, under the plugin's `/dami:` prefix. Skills always contain a hyphen, so the two can't collide.
 
 | Command | Goes to | For |
 |---|---|---|
@@ -179,6 +198,7 @@ All 14 are one word, under the plugin's `/dami:` prefix. Skills always contain a
 | `/dami:pass` | `baton-pass` | Hand work on |
 | `/dami:debrief` | `after-action` | Session review |
 | `/dami:learn` | `purposeful-tutor` | Tutoring |
+| `/dami:connect` | `host-connect` | Connect a VPS so agents can run there |
 
 The other blocks fire on their own, or through `/dami:help`.
 
@@ -232,6 +252,7 @@ The other blocks fire on their own, or through `/dami:help`.
 | `after-action` | Turn session failures into lasting changes to the agent's surroundings |
 | `walk-me-through` | Script the steps only a person can do |
 | `automation-blueprint` | Specify repeated work well enough to delegate |
+| `host-connect` | Connect a VPS or other machine so the hub can hand it runs |
 
 ### craft: people-facing work
 
@@ -251,6 +272,7 @@ damistack status       Check Claude Code, Herdr, Codex and OpenCode
 damistack team         See this repo's agents, runs, board and claimed files
 damistack link         Share the skills and hub with Codex and OpenCode
 damistack mcp          Print hub settings for any other MCP client
+damistack connect [name]              Walk through connecting a VPS: Tailscale, key, Claude Code
 damistack host add <name> [ssh]       Let the hub run agents on a remote machine
 damistack host rc <name> [start|status|stop]
                        Claude Remote Control on that machine, for this repo

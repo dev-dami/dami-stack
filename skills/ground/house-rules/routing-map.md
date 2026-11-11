@@ -11,6 +11,7 @@ Skills here fire on the state of the work, unprompted. Each takes and gives a sh
 - Stubborn code: module-depth survey > question-tree > work-chart
 - Same mistake twice: after-action > repo-fitting (mechanical) or agent-prose (judgement)
 - Work moving anywhere, or a packet received: baton-pass
+- Work on the user's VPS or another machine: host-connect
 Beneath all routes: shared-words for domain language, module-depth for code shape, agent-prose for anything an agent reads.
 
 ## Always

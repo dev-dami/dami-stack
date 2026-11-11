@@ -371,6 +371,7 @@ function help() {
     damistack team         See this repo's agents, runs, board and claimed files
     damistack link         Share the skills and hub with Codex and OpenCode
     damistack mcp          Print hub settings for any other MCP client
+    damistack connect [name]              Walk through connecting a VPS: Tailscale, key, Claude Code
     damistack host add <name> [ssh]       Let the hub run agents on a remote machine
     damistack host rc <name> [start|status|stop]
                            Claude Remote Control on that machine, for this repo
@@ -390,15 +391,22 @@ const commands = {
   mcp,
   team,
   host,
+  connect: () => require('./connect').connect(process.argv.slice(3)),
   version,
   '--version': version,
   '-v': version,
 };
 
-try {
-  const arg = process.argv[2];
-  process.exitCode = (Object.hasOwn(commands, arg || '') ? commands[arg]() : open(arg));
-} catch (err) {
+const failed = (err) => {
   console.error(`\n  ${red('✗')} ${err.message}\n`);
   process.exitCode = 1;
+};
+
+try {
+  const arg = process.argv[2];
+  const result = Object.hasOwn(commands, arg || '') ? commands[arg]() : open(arg);
+  if (result && typeof result.then === 'function') result.then((code) => { process.exitCode = code; }, failed);
+  else process.exitCode = result;
+} catch (err) {
+  failed(err);
 }

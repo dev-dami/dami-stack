@@ -1,6 +1,6 @@
 {
   "name": "dami",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "A multi-agent operating system of composable skills for Claude Code, Codex and OpenCode.",
   "author": {
     "name": "Damilare Osibanjo"
@@ -26,6 +26,7 @@
     "./skills/tend/after-action",
     "./skills/tend/walk-me-through",
     "./skills/tend/automation-blueprint",
+    "./skills/tend/host-connect",
     "./skills/craft/article-workshop",
     "./skills/craft/purposeful-tutor"
   ],

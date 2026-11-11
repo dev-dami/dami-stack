@@ -53,6 +53,7 @@ When the user asks what exists, give the sets below and the routes that fit thei
 | tend | `after-action` | Turn session failures into lasting changes to the agent's surroundings |
 | tend | `walk-me-through` | Script the steps only a person can do |
 | tend | `automation-blueprint` | Specify repeated work well enough to delegate |
+| tend | `host-connect` | Connect a VPS or other machine so the hub can hand it runs |
 | craft | `article-workshop` | Turn raw thought into a finished article |
 | craft | `purposeful-tutor` | Teach a topic durably, with the working folder as memory |
 

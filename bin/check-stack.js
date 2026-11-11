@@ -21,6 +21,7 @@ const GATED = {
   'merge-case': ['G1'],
   'repo-fitting': ['G2', 'G3'],
   'walk-me-through': ['G2'],
+  'host-connect': ['G3', 'G6'],
 };
 const GATE_LINE = /^Gate: get the user's OK before .+ \(([^()]*)\)\. See gates\.md in the skill house-rules\.$/;
 

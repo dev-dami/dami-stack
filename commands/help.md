@@ -24,6 +24,7 @@ With a situation, print only the matching route and command from the guide, in t
 - `/dami:pass` hand work to another agent, session or person
 - `/dami:debrief` turn a rough session into lasting fixes
 - `/dami:learn` learn a topic over several sessions
+- `/dami:connect` connect your VPS so agents can run there
 
 **Routes**
 

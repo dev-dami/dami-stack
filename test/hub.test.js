@@ -172,7 +172,7 @@ test('notes are found by the file they are pinned to', async () => {
 test('skills are listed and read, and cannot escape their folder', async () => {
   const a = connect('codex-mcp-client');
   await a.ready;
-  assert.strictEqual((await a.call('skills')).skills.length, 21);
+  assert.strictEqual((await a.call('skills')).skills.length, 22);
   assert.match((await a.call('skills', { name: 'finish-line' })).text, /# Finish line/i);
   assert.match((await a.call('skills', { name: 'finish-line', file: '../../../package.json' })).error, /outside the skill/);
   a.close();
@@ -182,7 +182,7 @@ test('commands are prompts for other clients, and not for Claude Code', async ()
   const codex = connect('codex-mcp-client');
   const claude = connect('claude-code');
   await Promise.all([codex.ready, claude.ready]);
-  assert.strictEqual((await codex.request('prompts/list')).result.prompts.length, 14);
+  assert.strictEqual((await codex.request('prompts/list')).result.prompts.length, 15);
   assert.strictEqual((await claude.request('prompts/list')).result.prompts.length, 0);
   const prompt = await codex.request('prompts/get', { name: 'fix', arguments: { focus: 'the flaky export' } });
   assert.match(prompt.result.messages[0].content.text, /the flaky export/);
