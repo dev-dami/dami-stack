@@ -266,10 +266,52 @@ function team() {
     console.log('');
   };
   section('Agents', agents.map(([name]) => name), 'none connected');
-  section('Runs', runs.map(([id, r]) => `${id.padEnd(6)}${r.kind.padEnd(10)}${r.status.padEnd(11)}${dim(`from ${r.from}`)}`), 'none yet');
+  section('Runs', runs.map(([id, r]) => `${id.padEnd(6)}${r.kind.padEnd(10)}${r.status.padEnd(11)}${dim(`${r.host ? `on ${r.host}, ` : ''}from ${r.from}`)}`), 'none yet');
   section('Board', state.tasks.map((t) => `${t.id.padEnd(6)}${t.status.padEnd(9)}${t.title}${t.owner ? dim(`  ${t.owner}`) : ''}`), 'empty');
   section('Claimed files', leases.map((l) => `${l.path}${dim(`  ${l.owner}`)}`), 'none');
+  const hostList = Object.entries(require('../mcp/hosts').readHosts());
+  section('Hosts', hostList.map(([name, h]) => `${name.padEnd(12)}${dim(`${h.ssh}, ${(h.kinds || []).join(' ') || 'no agents'}`)}`), 'none, add one with damistack host add');
   return 0;
+}
+
+// Remote machines the hub can hand runs to, over key-only ssh.
+function host() {
+  banner();
+  const hosts = require('../mcp/hosts');
+  const [sub, name, extra] = process.argv.slice(3);
+  if (!sub || sub === 'list') {
+    const list = Object.entries(hosts.readHosts());
+    if (!list.length) console.log(`  ${dim('No hosts yet. Add one with: damistack host add <name> [ssh alias]')}\n`);
+    list.forEach(([n, h]) => ok(n.padEnd(12), `${h.ssh}  ~/${h.root}  ${(h.kinds || []).join(' ') || 'no agents found'}`));
+    console.log('');
+    return 0;
+  }
+  if (!name) throw new Error(`damistack host ${sub} needs a host name.`);
+  if (sub === 'add') {
+    const added = hosts.addHost(name, extra);
+    ok(name.padEnd(12), `${added.user}@${added.hostname} over ssh ${added.ssh}`);
+    (added.kinds.length ? ok : warn)('agents'.padEnd(12), added.kinds.join(', ') || 'none found on PATH or in ~/.local/bin');
+    (added.tmux ? ok : warn)('tmux'.padEnd(12), added.tmux ? 'found, Remote Control can run there' : 'missing, needed for Remote Control');
+    console.log('');
+    return 0;
+  }
+  if (sub === 'remove') {
+    hosts.removeHost(name);
+    ok(name.padEnd(12), 'removed');
+    console.log('');
+    return 0;
+  }
+  if (sub === 'rc') {
+    const { handlers } = require('../mcp/tools');
+    const { hubDir } = require('../mcp/store');
+    const cwd = process.cwd();
+    const r = handlers.team_host({ cwd, dir: hubDir(cwd) }, { action: 'remote_control', name, control: extra || 'status' });
+    console.log(`  ${bold(`Remote Control on ${name}`)} ${dim(r.session)}\n`);
+    r.output.split('\n').forEach((line) => console.log(`    ${line}`));
+    console.log('');
+    return 0;
+  }
+  throw new Error(`Unknown: damistack host ${sub}. Try add, remove, list or rc.`);
 }
 
 // True when dest already resolves to target. A broken link can't be shown to be ours, so it isn't.
@@ -329,6 +371,9 @@ function help() {
     damistack team         See this repo's agents, runs, board and claimed files
     damistack link         Share the skills and hub with Codex and OpenCode
     damistack mcp          Print hub settings for any other MCP client
+    damistack host add <name> [ssh]       Let the hub run agents on a remote machine
+    damistack host rc <name> [start|status|stop]
+                           Claude Remote Control on that machine, for this repo
     damistack help         Show this help
     damistack --version    Show the version
 `);
@@ -344,6 +389,7 @@ const commands = {
   link,
   mcp,
   team,
+  host,
   version,
   '--version': version,
   '-v': version,

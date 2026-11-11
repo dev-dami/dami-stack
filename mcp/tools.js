@@ -3,7 +3,8 @@ const { spawn, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const { KINDS, which } = require('./agents');
-const { nextId, withState } = require('./store');
+const hosts = require('./hosts');
+const { nextId, teamId, withState } = require('./store');
 
 const STACK = path.resolve(__dirname, '..');
 const MAX_ACTIVE_RUNS = 3;
@@ -33,12 +34,13 @@ const definitions = [
   },
   {
     name: 'team_ask',
-    description: 'Start another agent headless with a message and get its reply. Use a packet as the message. Write mode lets it edit; isolate gives it a git worktree. Starting agents the user did not ask for needs their OK.',
+    description: 'Start another agent headless with a message and get its reply. Use a packet as the message. Write mode lets it edit; isolate gives it a git worktree. host runs it on a remote machine from team_host: the current code goes up, and in write mode its commits come back as a branch. Starting agents the user did not ask for needs their OK.',
     inputSchema: schema({
       to: { type: 'string', enum: KINDS },
       message: str,
       mode: { type: 'string', enum: ['read', 'write'], description: 'Default read.' },
       isolate: { type: 'boolean', description: 'Run on its own git worktree and branch.' },
+      host: { type: 'string', description: 'A remote host name from team_host. Always isolated there.' },
       wait_seconds: { type: 'number', description: 'Wait this long for the reply, up to 50. Otherwise use team_run.' },
       timeout_minutes: { type: 'number', description: 'Default 15, up to 60.' },
     }, ['to', 'message']),
@@ -47,6 +49,16 @@ const definitions = [
     name: 'team_run',
     description: 'Check a team_ask run and read its reply, or stop it. wait_seconds waits for it to finish, up to 50. Leave id out to list recent runs.',
     inputSchema: schema({ id: str, stop: { type: 'boolean' }, wait_seconds: { type: 'number' } }),
+  },
+  {
+    name: 'team_host',
+    description: 'Remote machines for team_ask. list, add {name, ssh}, remove {name}, and remote_control {name, control: start|status|stop} to run Claude Remote Control there on this repo. Adding a host or starting Remote Control needs the user\'s OK.',
+    inputSchema: schema({
+      action: { type: 'string', enum: ['list', 'add', 'remove', 'remote_control'] },
+      name: str,
+      ssh: { type: 'string', description: 'ssh alias or user@address. Default: the name.' },
+      control: { type: 'string', enum: ['start', 'status', 'stop'] },
+    }, ['action']),
   },
   {
     name: 'board',
@@ -94,7 +106,8 @@ function roster({ dir }) {
       .filter(([, a]) => !a.left && Date.now() - a.seen < ACTIVE_AGENT_MS)
       .map(([name, a]) => ({ name, kind: a.kind, last_seen_seconds: Math.round((Date.now() - a.seen) / 1000) })),
     can_start: KINDS.filter(which),
-    running: Object.entries(state.runs).filter(([, r]) => r.status === 'running').map(([id, r]) => ({ id, kind: r.kind, from: r.from })),
+    running: Object.entries(state.runs).filter(([, r]) => r.status === 'running').map(([id, r]) => ({ id, kind: r.kind, host: r.host, from: r.from })),
+    hosts: Object.entries(hosts.readHosts()).map(([name, h]) => ({ name, kinds: h.kinds })),
   }));
 }
 
@@ -143,14 +156,35 @@ function waitFor(dir, id, seconds) {
 }
 
 function runView(id, run) {
-  const { kind, mode, status, reply, error, branch, cwd } = run;
-  return { id, kind, mode, status, reply, error, branch, folder: cwd, seconds: Math.round(((run.ended || Date.now()) - run.started) / 1000) };
+  const { kind, mode, status, reply, error, branch, cwd, host, commits } = run;
+  return {
+    id, kind, mode, status, reply, error, branch, folder: cwd, host, commits,
+    seconds: Math.round(((run.ended || Date.now()) - run.started) / 1000),
+  };
+}
+
+function teamHost({ cwd }, args) {
+  if (args.action === 'list') {
+    return { hosts: Object.entries(hosts.readHosts()).map(([name, h]) => ({ name, ssh: h.ssh, root: h.root, kinds: h.kinds })) };
+  }
+  if (!args.name) throw new Error(`${args.action} needs a name.`);
+  if (args.action === 'add') return hosts.addHost(args.name, args.ssh);
+  if (args.action === 'remove') return hosts.removeHost(args.name);
+  const host = hosts.getHost(args.name);
+  const control = args.control || 'status';
+  const repo = hosts.repoName(cwd, teamId(cwd));
+  const sha = control === 'start' ? hosts.pushUp(host, cwd, repo, 'dami/remote-control') : null;
+  return hosts.remoteControl(host, { action: control, repo, sha, name: `${path.basename(path.resolve(cwd))} on ${host.name}` });
 }
 
 function ask({ dir, me, cwd }, args) {
   const mode = args.mode || 'read';
   if (!KINDS.includes(args.to)) throw new Error(`to must be one of ${KINDS.join(', ')}.`);
-  if (!which(args.to)) throw new Error(`${args.to} is not installed here.`);
+  const host = args.host ? hosts.getHost(args.host) : null;
+  if (host && host.kinds && !host.kinds.includes(args.to)) {
+    throw new Error(`${args.to} was not on ${host.name} when it was added. Found: ${host.kinds.join(', ') || 'none'}. Re-add the host after installing it.`);
+  }
+  if (!host && !which(args.to)) throw new Error(`${args.to} is not installed here.`);
 
   const id = withState(dir, (state) => {
     const runs = Object.values(state.runs);
@@ -163,11 +197,24 @@ function ask({ dir, me, cwd }, args) {
     return nextId(state, 'r');
   });
 
-  const worktree = args.isolate ? makeWorktree(cwd, dir, id) : null;
-  const run = {
-    kind: args.to, mode, from: me.name, cwd: worktree ? worktree.tree : cwd, branch: worktree && worktree.branch,
-    status: 'running', started: Date.now(), timeoutMinutes: Math.min(args.timeout_minutes || 15, 60),
-  };
+  let run;
+  const timeoutMinutes = Math.min(args.timeout_minutes || 15, 60);
+  if (host) {
+    const repo = hosts.repoName(cwd, teamId(cwd));
+    const remoteId = `${id}-${Date.now().toString(36)}`;
+    run = {
+      kind: args.to, mode, from: me.name, host: host.name, repo, remoteId, localCwd: cwd,
+      cwd: `${host.name}:~/${host.root}/${repo}-runs/${remoteId}`,
+      branch: mode === 'write' ? `dami/${host.name}-${id}` : null,
+      status: 'running', started: Date.now(), timeoutMinutes,
+    };
+  } else {
+    const worktree = args.isolate ? makeWorktree(cwd, dir, id) : null;
+    run = {
+      kind: args.to, mode, from: me.name, cwd: worktree ? worktree.tree : cwd, branch: worktree && worktree.branch,
+      status: 'running', started: Date.now(), timeoutMinutes,
+    };
+  }
   const runDir = path.join(dir, 'runs', id);
   fs.mkdirSync(runDir, { recursive: true });
   fs.writeFileSync(path.join(runDir, 'prompt.md'), askPrompt(me, run, args.message));
@@ -187,7 +234,7 @@ function teamRun({ dir }, { id, stop, wait_seconds: waitSeconds }) {
   }
   return withState(dir, (state) => {
     if (!id) {
-      return { runs: Object.entries(state.runs).slice(-20).map(([key, r]) => ({ id: key, kind: r.kind, status: r.status, from: r.from })) };
+      return { runs: Object.entries(state.runs).slice(-20).map(([key, r]) => ({ id: key, kind: r.kind, host: r.host, status: r.status, from: r.from })) };
     }
     const run = state.runs[id];
     if (!run) throw new Error(`No run ${id}.`);
@@ -286,7 +333,7 @@ function skills(_ctx, { name, file }) {
 }
 
 const handlers = {
-  team_roster: roster, team_send: send, team_inbox: inbox, team_ask: ask, team_run: teamRun, board, lease, note, skills,
+  team_roster: roster, team_send: send, team_inbox: inbox, team_ask: ask, team_run: teamRun, team_host: teamHost, board, lease, note, skills,
 };
 
 module.exports = { STACK, definitions, handlers };

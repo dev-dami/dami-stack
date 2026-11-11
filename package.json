@@ -1,6 +1,6 @@
 {
   "name": "dami-stack",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Composable skills and a shared MCP hub so Claude Code, Codex and OpenCode can work as one team.",
   "license": "MIT",
   "author": "Damilare Osibanjo",

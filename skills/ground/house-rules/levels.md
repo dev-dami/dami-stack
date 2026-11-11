@@ -30,7 +30,7 @@ Levels degrade per move, not as a whole.
 |---|---|---|---|---|
 | see team | `team_roster` | own tools, PATH | `herdr agent list` | self |
 | board | `board` | bench `board.md` | bench `board.md` | bench `board.md` |
-| dispatch | `team_ask {to, message: <packet>, mode, isolate}`, then `team_run`; or `team_send` to an agent already running | host subagent tool, packet as prompt | new workspace and agent (see Herdr dispatch) | do it next, in order |
+| dispatch | `team_ask {to, message: <packet>, mode, isolate, host}`, then `team_run`; or `team_send` to an agent already running | host subagent tool, packet as prompt | new workspace and agent (see Herdr dispatch) | do it next, in order |
 | isolate | `isolate: true` on `team_ask`, which returns a branch | `git worktree add`, or the host's worktree option | `git worktree add`, workspace `--cwd` there | one branch at a time |
 | claim files | `lease` | lead assigns files in `board.md` | same | not needed |
 | hand over code | branch name in the report | branch name in the report | branch name in the report | commit |
@@ -66,6 +66,8 @@ How runs behave:
 - A read run starts in your tree, not in a worker's worktree. A checker's packet names the branch, and the folder `team_run` reported.
 - A headless worker may leave edits uncommitted `[assumed]`. Its packet says to commit on the branch. Before landing, confirm the branch holds the work, and look in the run's folder if it doesn't.
 - `team_run {id, stop: true}` stops a run.
+- `host` on `team_ask` runs the agent on a remote machine that `team_host list` shows. It gets your working folder as it is now, uncommitted edits and new files included, on its own worktree there. A write run commits there, and the hub fetches that commit back as the run's branch. Send heavy or long cards there to keep this machine free. A remote run never sees this machine's files outside the repo.
+- `team_host {action: remote_control, name, control: start}` runs Claude Remote Control on a host, on this repo's copy there, so the user can drive sessions on it from claude.ai/code or the phone. Starting it needs the user's OK.
 - Any MCP client can read the skills through the `skills` tool, even one with no copy of them.
 
 ## Check ladder

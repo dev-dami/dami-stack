@@ -1,7 +1,7 @@
 // Drives the real server over stdio, the way a client does. team_ask starts a
 // stand-in agent CLI, so the whole path runs without calling a model.
 const assert = require('node:assert');
-const { spawn } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -23,9 +23,12 @@ process.stdin.on('end', () => {
 fs.writeFileSync(fakeCli, process.platform === 'win32' ? `@node "${fakeAgent}" %*\r\n` : `#!/bin/sh\nexec node "${fakeAgent}" "$@"\n`);
 if (process.platform !== 'win32') fs.chmodSync(fakeCli, 0o755);
 
-function connect(clientName, cwd = tmp) {
+function connect(clientName, cwd = tmp, extraEnv = {}) {
   const child = spawn(process.execPath, [SERVER], {
-    env: { ...process.env, DAMI_HUB_DIR: path.join(tmp, 'hub'), DAMI_HUB_CWD: cwd, DAMI_AGENT: '', DAMI_CLI_CODEX: fakeCli },
+    env: {
+      ...process.env, DAMI_HUB_DIR: path.join(tmp, 'hub'), DAMI_HUB_CWD: cwd, DAMI_AGENT: '', DAMI_CLI_CODEX: fakeCli,
+      DAMI_HOSTS_FILE: path.join(tmp, 'hosts.json'), ...extraEnv,
+    },
     stdio: ['pipe', 'pipe', 'inherit'],
   });
   const waiting = new Map();
@@ -56,7 +59,7 @@ test('a client joins and receives the routing map', async () => {
   const { result } = await a.ready;
   assert.strictEqual(result.serverInfo.name, 'dami');
   assert.match(result.instructions, /# dami stack/);
-  assert.strictEqual((await a.request('tools/list')).result.tools.length, 9);
+  assert.strictEqual((await a.request('tools/list')).result.tools.length, 10);
   a.close();
 });
 
@@ -185,6 +188,68 @@ test('commands are prompts for other clients, and not for Claude Code', async ()
   assert.match(prompt.result.messages[0].content.text, /the flaky export/);
   codex.close();
   claude.close();
+});
+
+// A stand-in for ssh: runs the remote command in bash with HOME set to a folder that plays
+// the remote machine, and a stand-in claude there. Code really travels with git both ways.
+function bashPath() {
+  if (process.platform !== 'win32') return '/bin/bash';
+  const r = spawnSync('git', ['--exec-path'], { encoding: 'utf8' });
+  const file = r.status === 0 && path.resolve(r.stdout.trim(), '../../..', 'bin', 'bash.exe');
+  return file && fs.existsSync(file) ? file : null;
+}
+
+// Only git and the basic tools, so the remote side finds no agent CLIs of this machine.
+function barePath() {
+  if (process.platform !== 'win32') return '/usr/bin:/bin';
+  const gitRoot = path.resolve(path.dirname(bashPath()), '..');
+  return [path.join(gitRoot, 'usr', 'bin'), path.join(gitRoot, 'cmd')].join(';');
+}
+
+test('team_ask runs on a remote host: code goes up, and a write run comes back as a branch', { skip: !bashPath() && 'no bash' }, async (t) => {
+  const remoteHome = path.join(tmp, 'remote-home');
+  fs.mkdirSync(path.join(remoteHome, '.local', 'bin'), { recursive: true });
+  const remoteClaude = path.join(remoteHome, '.local', 'bin', 'claude');
+  fs.writeFileSync(remoteClaude, '#!/bin/sh\ninput=$(cat)\ncase "$input" in *"write a file"*) echo hi > remote.txt;; esac\necho "remote reply, sees local.txt: $(cat local.txt)"\n');
+  fs.chmodSync(remoteClaude, 0o755);
+  const fakeSsh = path.join(tmp, 'fake-ssh.js');
+  fs.writeFileSync(fakeSsh, `
+const { spawnSync } = require('child_process');
+const args = process.argv.slice(2);
+let i = 0;
+while (args[i] && args[i].startsWith('-')) i += args[i] === '-T' ? 1 : 2;
+const r = spawnSync(${JSON.stringify(bashPath())}, ['-c', args.slice(i + 1).join(' ')], {
+  stdio: 'inherit', cwd: ${JSON.stringify(remoteHome)},
+  env: { ...process.env, HOME: ${JSON.stringify(remoteHome)}, PATH: ${JSON.stringify(barePath())} },
+});
+process.exit(r.status === null ? 1 : r.status);`);
+
+  const repo = path.join(tmp, 'local-repo');
+  fs.mkdirSync(repo);
+  const git = (...a) => spawnSync('git', ['-C', repo, '-c', 'user.name=t', '-c', 'user.email=t@t', ...a], { encoding: 'utf8' });
+  git('init', '-q');
+  fs.writeFileSync(path.join(repo, 'README.md'), 'hello\n');
+  git('add', '-A');
+  git('commit', '-q', '-m', 'first');
+  fs.writeFileSync(path.join(repo, 'local.txt'), 'not committed yet');
+
+  const a = connect('claude-code', repo, { DAMI_SSH: fakeSsh });
+  t.after(() => a.close());
+  await a.ready;
+  const added = await a.call('team_host', { action: 'add', name: 'box', ssh: 'box' });
+  assert.deepStrictEqual(added.kinds, ['claude'], added.error);
+
+  const read = await a.call('team_ask', { to: 'claude', host: 'box', message: 'look around', wait_seconds: 40 });
+  assert.strictEqual(read.status, 'done', read.error);
+  assert.match(read.reply, /sees local.txt: not committed yet/);
+  assert.strictEqual(read.branch, null);
+
+  const write = await a.call('team_ask', { to: 'claude', host: 'box', mode: 'write', message: 'write a file', wait_seconds: 40 });
+  assert.strictEqual(write.status, 'done', write.error);
+  assert.strictEqual(write.commits, 1);
+  assert.strictEqual(git('show', `${write.branch}:remote.txt`).stdout.trim(), 'hi');
+  assert.strictEqual(git('status', '--short').stdout.trim(), '?? local.txt');
+  assert.match((await a.call('team_ask', { to: 'codex', host: 'box', message: 'x' })).error, /was not on box/);
 });
 
 test('parallel writers lose nothing', async () => {

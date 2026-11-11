@@ -4,6 +4,7 @@ const { spawn, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const { command, which } = require('./agents');
+const hosts = require('./hosts');
 const { nextId, withState } = require('./store');
 
 const [dir, id] = process.argv.slice(2);
@@ -86,8 +87,85 @@ function main() {
   });
 }
 
+// The same run on another machine: send the code up, run there on a worktree, bring the
+// branch back in write mode. The reply is the remote script's stdout.
+function remote() {
+  const run = withState(dir, (state) => state.runs[id]);
+  const host = hosts.getHost(run.host);
+  const runDir = path.join(dir, 'runs', id);
+  const rid = run.remoteId;
+  const baseRef = `dami/${rid}-base`;
+  const branch = `dami/${rid}`;
+  const sha = hosts.pushUp(host, run.localCwd, run.repo, baseRef);
+  withState(dir, (state) => { state.runs[id].sent = sha; });
+
+  const { args } = command({ ...run, cwd: '@CWD@' }, '@OUT@');
+  const arg = (a) => (a === '@OUT@' ? '"$RUNDIR/reply.txt"' : a === '@CWD@' ? '"$WT"' : hosts.q(a));
+  const child = hosts.spawnScript(host, hosts.runScriptFor(host, {
+    repo: run.repo, id: rid, base: baseRef, branch, write: run.mode === 'write',
+    agentLine: [run.kind, ...args].map(arg).join(' '),
+    prompt: fs.readFileSync(path.join(runDir, 'prompt.md'), 'utf8'),
+    timeoutMinutes: run.timeoutMinutes,
+  }));
+  withState(dir, (state) => { state.runs[id].pid = child.pid; });
+
+  let out = '';
+  let err = '';
+  child.stdout.on('data', (d) => { out += d; });
+  child.stderr.on('data', (d) => { err += d; });
+
+  const cleanup = (keepBranch) => hosts.cleanupRemote(host, { repo: run.repo, id: rid, baseRef, branch: keepBranch ? null : branch });
+  const stopAll = () => {
+    hosts.stopRemote(host, rid);
+    child.kill();
+    cleanup(false);
+  };
+  const timer = setTimeout(() => {
+    stopAll();
+    finish({ status: 'timed-out', error: `No reply within ${run.timeoutMinutes} minutes.` });
+    process.exit(0);
+  }, (run.timeoutMinutes + 2) * 60000);
+  const stopWatch = setInterval(() => {
+    if (withState(dir, (state) => state.runs[id].status) === 'stopped') {
+      stopAll();
+      process.exit(0);
+    }
+  }, 1000);
+
+  child.on('error', (e) => {
+    clearTimeout(timer);
+    clearInterval(stopWatch);
+    finish({ status: 'failed', error: e.message });
+  });
+  child.on('close', (code) => {
+    clearTimeout(timer);
+    clearInterval(stopWatch);
+    const reply = stripAnsi(out).trim().slice(-MAX_REPLY);
+    const fields = { reply };
+    if (code === 0 && run.mode === 'write') {
+      try {
+        hosts.fetchBack(host, run.localCwd, run.repo, branch, run.branch);
+        const ahead = spawnSync('git', ['-C', run.localCwd, 'rev-list', '--count', `${sha}..${run.branch}`], { encoding: 'utf8', windowsHide: true });
+        fields.commits = Number((ahead.stdout || '0').trim()) || 0;
+        if (!fields.commits) {
+          spawnSync('git', ['-C', run.localCwd, 'branch', '-D', run.branch], { windowsHide: true });
+          fields.branch = null;
+        }
+      } catch (e) {
+        fields.error = e.message;
+      }
+    }
+    cleanup(false);
+    if (code === 0 && !fields.error) finish({ status: 'done', ...fields });
+    else if (code === 124) finish({ status: 'timed-out', ...fields, error: `No reply within ${run.timeoutMinutes} minutes.` });
+    else finish({ status: 'failed', ...fields, error: fields.error || `Exit ${code}: ${stripAnsi(err).trim().slice(-1500)}` });
+  });
+}
+
 try {
-  main();
+  const { host } = withState(dir, (state) => state.runs[id]);
+  if (host) remote();
+  else main();
 } catch (err) {
   finish({ status: 'failed', error: err.message });
 }

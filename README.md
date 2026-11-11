@@ -97,7 +97,8 @@ The dami hub is a small MCP server, plain Node with no dependencies, that lets t
 
 | Tool | What it does |
 | --- | --- |
-| `team_ask` | Starts another agent (Claude Code, Codex or OpenCode) headless with a message, and returns its reply. Read or write mode, optionally on its own git worktree |
+| `team_ask` | Starts another agent (Claude Code, Codex or OpenCode) headless with a message, and returns its reply. Read or write mode, optionally on its own git worktree, here or on a remote host |
+| `team_host` | Remote machines for `team_ask`, and Claude Remote Control on them |
 | `team_run` | Checks a run, reads its reply, or stops it |
 | `team_send`, `team_inbox` | Messages between agents that are already running. Replies from runs land in the inbox too |
 | `team_roster` | Who is connected, which agents can be started, what is running |
@@ -105,6 +106,26 @@ The dami hub is a small MCP server, plain Node with no dependencies, that lets t
 | `lease` | Claims on files, so parallel agents don't edit the same thing |
 | `note` | Short team notes pinned to files |
 | `skills` | Lists and reads the skills, for clients that have no copy |
+
+### Remote hosts
+
+The hub can hand work to another machine, such as a VPS, over key-only ssh. A Tailscale address keeps ssh off the public internet. Register the machine once:
+
+```bash
+damistack host add contabo
+```
+
+The name is an alias from `~/.ssh/config`, or pass the ssh target as a second argument. The hub checks it can log in without a password, and records which agents are installed there.
+
+After that, `team_ask` with `host: "contabo"` runs the agent there. Your working folder goes up with git, uncommitted edits and new files included, minus what `.gitignore` leaves out. The agent works on its own worktree in `~/dami` on the host. In write mode its commit comes back here as a branch such as `dami/contabo-r3`, and your own tree and index are never touched. The remote worktree is removed when the run ends.
+
+Remote Control on the host lets you drive sessions there from claude.ai/code or the Claude app:
+
+```bash
+damistack host rc contabo start
+```
+
+It runs in tmux on the host, in this repo's copy there, and starts each session on its own worktree. `status` and `stop` do what they say. Agents can do the same with `team_host`.
 
 The hub keeps state per repo in `~/.dami/hub`, shared by every worktree. Runs keep going if the agent that asked exits, and the reply waits in its inbox. Two brakes stop agents from starting each other in a loop: at most 3 runs at once, and 24 in ten minutes. A headless agent can't ask you anything, so it reports what it needs instead. `damistack team` shows the current agents, runs, board and claimed files.
 
@@ -230,6 +251,9 @@ damistack status       Check Claude Code, Herdr, Codex and OpenCode
 damistack team         See this repo's agents, runs, board and claimed files
 damistack link         Share the skills and hub with Codex and OpenCode
 damistack mcp          Print hub settings for any other MCP client
+damistack host add <name> [ssh]       Let the hub run agents on a remote machine
+damistack host rc <name> [start|status|stop]
+                       Claude Remote Control on that machine, for this repo
 damistack help         Show this help
 damistack --version    Show the version
 ```
