@@ -39,6 +39,7 @@ One line, then show the thing.
 The user can grant a durable OK for one gate and scope. It lives in `~/.dami/prefs.md`, one line per grant, and the session hook injects it at session start:
 
 `ok: G1 push + open/ready PR on agent/* branches; never merge, never default branch`
+`ok: G1 reply to and resolve review threads on my own PRs`
 
 - A standing OK is an explicit request. It covers every matching action until the user withdraws it.
 - A request to fix something on an open PR covers pushing to that PR's branch.

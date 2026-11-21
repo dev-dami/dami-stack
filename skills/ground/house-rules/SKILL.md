@@ -59,7 +59,7 @@ Workers and scouts send questions up through `Open` and gate needs through `Need
 `~/.dami/prefs.md` holds the user's standing preferences, one line each. The session hook injects it on Claude Code; elsewhere, read it at session start if it exists. Only the user writes it: propose a line, and their saying yes is the OK to add it.
 
 - `ok: <gate> <scope>`: a standing OK, defined under Standing OK in `gates.md`.
-- `show: <command> <file>`: the delivery channel. When set, share pages, images and video only through it, give the URL it prints, and never publish host artifacts.
+- `show: <command> <file>`: the delivery channel. When set, share pages, images and video only through it, give the URL it prints, and never publish host artifacts. A hook enforces this on Claude Code.
 - `taste: <note>`: look and style preferences for visual work.
 
 ## Files

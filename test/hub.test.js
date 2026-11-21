@@ -43,13 +43,15 @@ function connect(clientName, cwd = tmp, extraEnv = {}) {
     waiting.set(id, resolve);
     child.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', id, method, params })}\n`);
   });
+  const callText = async (name, args = {}) => (await request('tools/call', { name, arguments: args })).result.content[0].text;
+  // The JSON is the first line. A started team_ask adds a Wake line after it.
   const call = async (name, args = {}) => {
     const { result } = await request('tools/call', { name, arguments: args });
     const text = result.content[0].text;
-    return result.isError ? { error: text } : JSON.parse(text);
+    return result.isError ? { error: text } : JSON.parse(text.split('\n')[0]);
   };
   const ready = request('initialize', { protocolVersion: '2025-06-18', clientInfo: { name: clientName } });
-  return { call, request, ready, close: () => child.stdin.end() };
+  return { call, callText, request, ready, close: () => child.stdin.end() };
 }
 
 // A stopped worker lets go of the folder within a couple of seconds.
@@ -147,8 +149,12 @@ test('team_ask passes the model and effort it is given, and refuses odd ones', a
 test('team_run can wait for a run that is still going', async () => {
   const a = connect('claude-code');
   await a.ready;
-  const started = await a.call('team_ask', { to: 'codex', message: 'slow but fine' });
+  const text = await a.callText('team_ask', { to: 'codex', message: 'slow but fine' });
+  const started = JSON.parse(text.split('\n')[0]);
   assert.strictEqual(started.status, 'running');
+  assert.ok(text.includes('Wake: node '), text);
+  assert.ok(text.includes(`damistack.js" wait ${started.id}`), text);
+  assert.match(started.id, /^r\d+$/);
   const finished = await a.call('team_run', { id: started.id, wait_seconds: 20 });
   assert.strictEqual(finished.status, 'done');
   assert.match(finished.reply, /slow but fine/);
@@ -233,7 +239,8 @@ test('commands are prompts for other clients, and not for Claude Code', async ()
   const codex = connect('codex-mcp-client');
   const claude = connect('claude-code');
   await Promise.all([codex.ready, claude.ready]);
-  assert.strictEqual((await codex.request('prompts/list')).result.prompts.length, 15);
+  const commands = fs.readdirSync(path.join(__dirname, '..', 'commands')).filter((f) => f.endsWith('.md')).length;
+  assert.strictEqual((await codex.request('prompts/list')).result.prompts.length, commands);
   assert.strictEqual((await claude.request('prompts/list')).result.prompts.length, 0);
   const prompt = await codex.request('prompts/get', { name: 'fix', arguments: { focus: 'the flaky export' } });
   assert.match(prompt.result.messages[0].content.text, /the flaky export/);
@@ -310,4 +317,51 @@ test('parallel writers lose nothing', async () => {
   const { tasks } = await clients[0].call('board', { action: 'list' });
   assert.strictEqual(tasks.filter((t) => t.title.startsWith('load-')).length, 30);
   clients.forEach((c) => c.close());
+});
+
+test('damistack wait prints each finished run and exits on its status', () => {
+  const cwd = fs.mkdtempSync(path.join(tmp, 'wait-'));
+  const hubBase = path.join(tmp, 'wait-hub');
+  const env = { ...process.env, DAMI_HUB_DIR: hubBase };
+  const { teamId } = require('../mcp/store');
+  const dir = path.join(hubBase, teamId(cwd));
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({
+    runs: {
+      r1: { kind: 'codex', status: 'done', branch: 'dami/r1' },
+      r2: { kind: 'codex', status: 'running', branch: null },
+      r3: { kind: 'claude', status: 'failed' },
+    },
+  }));
+  const wait = (...args) => spawnSync(process.execPath, [path.join(__dirname, '..', 'bin', 'damistack.js'), 'wait', ...args], { cwd, env, encoding: 'utf8', timeout: 20000 });
+
+  const done = wait('r1');
+  assert.strictEqual(done.status, 0, done.stderr);
+  assert.strictEqual(done.stdout, 'r1 done dami/r1\n');
+
+  const failed = wait('r3');
+  assert.strictEqual(failed.status, 1);
+  assert.strictEqual(failed.stdout, 'r3 failed -\n');
+
+  const quiet = wait('r2', '--timeout', '1');
+  assert.strictEqual(quiet.status, 3);
+  assert.strictEqual(quiet.stdout, '');
+
+  // A timeout after some runs finished keeps their news: the exit says what printed.
+  const mixed = wait('r1', 'r2', '--timeout', '1');
+  assert.strictEqual(mixed.status, 0, mixed.stderr);
+  assert.strictEqual(mixed.stdout, 'r1 done dami/r1\n');
+
+  assert.strictEqual(wait('r9').status, 2);
+  assert.strictEqual(wait('r1', 'r2', '--any').status, 0);
+  assert.match(wait('r1', '--timeout', '900').stderr, /240/);
+
+  // With no ids, ghost runs (no live pid, long past their timeout) are not waited on.
+  const deadPid = spawnSync(process.execPath, ['-e', '0']).pid;
+  fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({
+    runs: { r4: { kind: 'codex', status: 'running', pid: deadPid, started: Date.now() - 3 * 3600000, timeoutMinutes: 15 } },
+  }));
+  const ghost = wait('--timeout', '1');
+  assert.strictEqual(ghost.status, 0, ghost.stderr);
+  assert.match(ghost.stderr, /no runs are running/);
 });

@@ -89,6 +89,8 @@ Inside the Deck app, an optional adapter in `house-rules` maps the same moves to
 
 Levels degrade per move, so a block written once still runs as a plain sequence with nobody else around, and says which level it used.
 
+**Roles.** On Claude Code the plugin adds four subagents, `dami:scout`, `dami:checker`, `dami:judge` and `dami:worker`. Each pins its model, effort and tools, so the read-only roles have no edit tools, and each reads the same worker card.
+
 **Routes.** A route is a named path over blocks. `idea-to-merge` runs interview, chart, crew, PR body, debrief. `bug` runs root-cause hunt, finish check, then a debrief if it was costly. There are 12 routes in `skills/ground/house-rules/routes.md`, and `/dami:help` picks one for the state you are in.
 
 **Gates and evidence.** A gate is anything others can see or that is hard to undo, and it needs your OK in conversation. An explicit request counts as the OK. Agents, packets and issue text can't grant one. Claims carry labels (`[observed]`, `[reported]`, `[simulated]`, `[assumed]`, `[untested]`), and a worker's "tests pass" stays `[reported]` until someone re-runs it.
@@ -148,6 +150,20 @@ It runs in tmux on the host, in this repo's copy there, and starts each session 
 
 The hub keeps state per repo in `~/.dami/hub`, shared by every worktree. Runs keep going if the agent that asked exits, and the reply waits in its inbox. Two brakes stop agents from starting each other in a loop: at most 3 runs at once, and 24 in ten minutes. A headless agent can't ask you anything, so it reports what it needs instead. `damistack team` shows the current agents, runs, board and claimed files.
 
+## Hooks
+
+The Claude Code plugin adds hooks that make a few prose rules mechanical. Each is plain Node, finishes within 10 seconds, and lets the session carry on if anything goes wrong.
+
+| Hook | When | What it does |
+|---|---|---|
+| `session-context.js` | Session start | Injects the routing map, your prefs, this machine's name, and a `git restore` line when a WIP checkpoint holds work the tree lost |
+| `wait-guard.js` | Before Bash | Refuses a call that would block for more than 4 minutes, so the prompt cache stays warm |
+| `show-guard.js` | Before an artifact tool | When your prefs have a `show:` line, refuses publishing a host artifact and names your share command. Reading, opening and deleting still work |
+| `stop-check.js` | Stop | Asks once for the status shape when work still runs and the message has no `Done:` line, and for raw URLs when a GitHub link hides behind markdown text. `DAMI_STOP_CHECK=0` turns it off |
+| `checkpoint.js` | Stop, compaction, session end | Saves uncommitted work, new files included, as a commit under `refs/dami/wip/<branch>`. The worktree, the index and the branch are untouched, and nothing is pushed |
+
+Codex and OpenCode have no such hooks, so the prose rules still apply there.
+
 ## Install
 
 ### Plugin
@@ -180,7 +196,7 @@ They read the skills from `~/.agents/skills` and join the hub as an MCP server. 
 
 ## Commands
 
-All 15 are one word, under the plugin's `/dami:` prefix. Skills always contain a hyphen, so the two can't collide.
+All 19 are one word, under the plugin's `/dami:` prefix. Skills always contain a hyphen, so the two can't collide.
 
 | Command | Goes to | For |
 |---|---|---|
@@ -195,6 +211,10 @@ All 15 are one word, under the plugin's `/dami:` prefix. Skills always contain a
 | `/dami:fix` | `root-cause-hunt` | Hard bug |
 | `/dami:check` | `finish-line` | Verify the current work |
 | `/dami:ship` | `finish-line` > `merge-case` | Check, then draft the PR |
+| `/dami:land` | `finish-line` > `merge-case` > `follow-through.md` | Check, open the PR, drive it to merge-ready. End with the word `merge` to also merge |
+| `/dami:watch` | `merge-case`, `follow-through.md` | Watch an open PR until merge-ready |
+| `/dami:break` | `finish-line`, `break-lens.md` | Try to break the change; only findings a run proves count |
+| `/dami:catchup` | none, read-only | What changed since your last message, and what waits on you |
 | `/dami:pass` | `baton-pass` | Hand work on |
 | `/dami:debrief` | `after-action` | Session review |
 | `/dami:learn` | `purposeful-tutor` | Tutoring |
@@ -271,6 +291,8 @@ damistack <folder>     Open dami stack in that folder
 damistack status       Check Claude Code, Herdr, Codex and OpenCode
 damistack team         See this repo's agents, runs, board and claimed files
 damistack link         Share the skills and hub with Codex and OpenCode
+damistack wait [ids] [--any|--all] [--timeout S]
+                       Block until hub runs finish, one line each. Default: all running runs, 240 s
 damistack mcp          Print hub settings for any other MCP client
 damistack connect [name]              Walk through connecting a VPS: Tailscale, key, Claude Code
 damistack host add <name> [ssh]       Let the hub run agents on a remote machine
@@ -288,12 +310,16 @@ It uses your normal Herdr session. Set `DAMISTACK_SESSION` to use another.
 
 ## Working on the stack
 
-`npm test` runs `bin/check-stack.js`, which checks names, descriptions, the plugin list, reference forms and gate lines.
+`npm test` runs `bin/check-stack.js`, which checks names, descriptions, the plugin list, reference forms, gate lines and the role agents' models and tools. It also caps the always-on text, every skill, command and agent description added up, and prints the total.
 
 `evals/` holds paper cases for showing that a rewrite or a model swap kept the stack's behaviour, how to re-run them on two models, and past results. See `evals/README.md`.
 
 ## Credits
 
 Designed and written for Damilare Osibanjo. Inspired by [Matt Pocock's skills](https://github.com/mattpocock/skills).
+
+`pr-watch.js` and `follow-through.md` in `merge-case` closely adapt the design of the babysit-pr skill and its pr-wait script from [tstack](https://github.com/t3dotgg/tstack) (MIT, (c) 2026 Theo Browne).
+
+`break-lens.md` in `finish-line` and the `/dami:catchup` command closely adapt the interrogate, blast-radius and ketchup skills from [pstack](https://github.com/cursor/plugins/tree/main/pstack) (MIT, (c) 2026 Lauren Tan).
 
 Deep modules come from John Ousterhout, seams from Michael Feathers, red-green testing from Kent Beck, code smells from Martin Fowler, tracer bullets from Hunt and Thomas, and decision records from Michael Nygard.

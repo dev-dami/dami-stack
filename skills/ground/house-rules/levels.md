@@ -38,7 +38,7 @@ Levels degrade per move, not as a whole.
 | race | several isolated `team_ask` runs on one brief, compare branches, the user keeps one | N workers, isolated, compare diffs | N workspaces | one attempt, and say no race ran |
 | check | `team_ask` to another kind, read mode | fresh subagent, or an other-kind workspace if Herdr is up | other-kind workspace | clean second pass, labelled `self` |
 | steer | `team_send` to a running agent. A headless run doesn't read its inbox, so stop it and re-ask with a better packet | subagent message, if supported | none | none |
-| wait | `team_run {id, wait_seconds: 50}`, repeated | a background run with the host's monitor tool, or `timeout 240 sh -c "until <done>; do sleep 15; done"` (on cmd.exe or PowerShell, the same loop in `node -e`), repeated | same as host | same as host |
+| wait | On Claude Code, Monitor the Wake line team_ask returns with `--timeout 0` appended, `timeout_ms` 1800000, re-armed on expiry; elsewhere `team_run {id, wait_seconds: 50}`, repeated | a background run under the host's Monitor tool, or `timeout 240 sh -c "until <done>; do sleep 15; done"` (on cmd.exe or PowerShell, the same loop in `node -e`), repeated | same as host | same as host |
 | remember | `note` | bench `notes/` | bench `notes/` | bench `notes/` |
 | budget | `timeout_minutes` on `team_ask` | stop condition in the brief, unenforced | same | same |
 | look back | session logs | session logs | session logs | session logs |
@@ -46,15 +46,15 @@ Levels degrade per move, not as a whole.
 
 ## Models
 
-Always pass the model when you start a helper, through `model` on `team_ask`, the host subagent tool's model field, or `--model`. Never inherit the lead's.
+Always set the model when you start a helper. Never inherit the lead's. At host on Claude Code, start the role's plugin agent, which pins model, effort and tools. Through `team_ask`, Herdr or any other subagent tool, pass `model` (or `--model`) from this table.
 
-| Role | Model |
-|---|---|
-| Lead, including its finish-line pass and the message that closes a turn | Opus 5.5, the session model. Never the top-price tier for orchestration or Bash |
-| Implementation worker | Opus 5.5 at medium effort, high for the hardest card |
-| Sub-lead (a lead under the top lead) over mechanical cards only: its packets and status replies | Sonnet 5.5 |
-| Scout, checker of mechanical claims, chores (run, wait, scrape, fetch, rename) | Sonnet 5.5; Haiku 5.5 for pure polling |
-| Judge, root cause | Opus 5.5 at high effort. The top tier only for a named card, short-lived: after two failed runs, or when the user names it |
+| Role | Model | Agent at host |
+|---|---|---|
+| Lead, including its finish-line pass and the message that closes a turn | Opus 5.5, the session model. Never the top-price tier for orchestration or Bash | none |
+| Implementation worker | Opus 5.5 at medium effort, high for the hardest card | `dami:worker` |
+| Sub-lead (a lead under the top lead) over mechanical cards only: its packets and status replies | Sonnet 5.5 | none |
+| Scout, checker of mechanical claims, chores (run, wait, scrape, fetch, rename) | Sonnet 5.5; Haiku 5.5 for pure polling | `dami:scout`, `dami:checker` |
+| Judge, root cause | Opus 5.5 at high effort. The top tier only for a named card, short-lived: after two failed runs, or when the user names it | `dami:judge` |
 
 Cap effort at xhigh, and raise it one step only with a stated reason.
 
@@ -82,6 +82,7 @@ Plan around these.
 
 How runs behave:
 
+- A wake that needs no action ends the turn silently.
 - Headless agents can't ask the user anything. The packet must hold all they need. A question or a gate comes back in the reply, under `Open` or `Needs OK`.
 - `team_ask` with write mode and no isolate edits the shared tree, so claim files with `lease` first.
 - A run may not have the hub's tools, because each client registers the server itself. The lead holds a worker's leases and updates `board` for it.

@@ -20,9 +20,13 @@ function teamId(cwd) {
   return `dir-${crypto.createHash('sha1').update(path.resolve(cwd).toLowerCase()).digest('hex').slice(0, 7)}`;
 }
 
+// The hub folder for a team id, without creating it, for read-only callers.
+function hubPath(id) {
+  return path.join(process.env.DAMI_HUB_DIR || path.join(os.homedir(), '.dami', 'hub'), id);
+}
+
 function hubDir(cwd) {
-  const base = process.env.DAMI_HUB_DIR || path.join(os.homedir(), '.dami', 'hub');
-  const dir = path.join(base, teamId(cwd));
+  const dir = hubPath(teamId(cwd));
   fs.mkdirSync(path.join(dir, 'runs'), { recursive: true });
   return dir;
 }
@@ -90,4 +94,4 @@ const nextId = (state, prefix) => {
   return `${prefix}${state.seq}`;
 };
 
-module.exports = { hubDir, nextId, teamId, withState };
+module.exports = { hubDir, hubPath, nextId, teamId, withState };

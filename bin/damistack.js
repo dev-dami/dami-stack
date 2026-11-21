@@ -274,6 +274,57 @@ function team() {
   return 0;
 }
 
+// Blocks until hub runs finish, printing `<id> <status> <branch>` for each, so a
+// monitor wakes the lead only when there is news. Exit 0 all printed runs done,
+// 1 any failed, timed out or stopped, 2 unknown id, 3 timeout with nothing printed.
+// The default id list skips ghost runs (see runAlive in team-state.js).
+function wait() {
+  const { hubDir } = require('../mcp/store');
+  const args = process.argv.slice(3);
+  let ids = [];
+  let any = false;
+  let timeout = 240;
+  for (let i = 0; i < args.length; i += 1) {
+    if (args[i] === '--any') any = true;
+    else if (args[i] === '--all') any = false;
+    else if (args[i] === '--timeout' && /^\d+$/.test(args[i + 1] || '')) { timeout = Number(args[i + 1]); i += 1; }
+    else if (/^r\d+$/.test(args[i])) ids.push(args[i]);
+    else { console.error(`damistack wait: unknown argument ${args[i]}`); return 2; }
+  }
+  if (timeout > 240) {
+    console.error('damistack wait: --timeout capped at 240, so one Bash call stays inside the wait rule. Use 0 under a monitor or background run.');
+    timeout = 240;
+  }
+  const file = path.join(hubDir(process.cwd()), 'state.json');
+  const runs = () => {
+    try { return JSON.parse(fs.readFileSync(file, 'utf8')).runs || {}; } catch { return null; }
+  };
+  const first = runs() || {};
+  const { runAlive } = require('./team-state');
+  if (!ids.length) ids = Object.keys(first).filter((id) => runAlive(first[id]));
+  const unknown = ids.find((id) => !first[id]);
+  if (unknown) { console.error(`damistack wait: no run ${unknown}`); return 2; }
+  if (!ids.length) { console.error('damistack wait: no runs are running'); return 0; }
+
+  const deadline = timeout ? Date.now() + timeout * 1000 : Infinity;
+  const printed = {};
+  for (;;) {
+    const state = runs();
+    for (const id of ids) {
+      const run = state && state[id];
+      if (run && run.status !== 'running' && !printed[id]) {
+        printed[id] = run.status;
+        console.log(`${id} ${run.status} ${run.branch || '-'}`);
+      }
+    }
+    const finished = Object.values(printed);
+    const code = finished.every((s) => s === 'done') ? 0 : 1;
+    if (finished.length === ids.length || (any && finished.length)) return code;
+    if (Date.now() >= deadline) return finished.length ? code : 3;
+    sleep(Math.min(5000, deadline - Date.now()));
+  }
+}
+
 // Remote machines the hub can hand runs to, over key-only ssh.
 function host() {
   banner();
@@ -370,6 +421,8 @@ function help() {
     damistack status       Check Claude Code, Herdr, Codex and OpenCode
     damistack team         See this repo's agents, runs, board and claimed files
     damistack link         Share the skills and hub with Codex and OpenCode
+    damistack wait [ids] [--any|--all] [--timeout S]
+                           Block until hub runs finish, one line each. Default: all running runs, 240 s
     damistack mcp          Print hub settings for any other MCP client
     damistack connect [name]              Walk through connecting a VPS: Tailscale, key, Claude Code
     damistack host add <name> [ssh]       Let the hub run agents on a remote machine
@@ -391,6 +444,7 @@ const commands = {
   mcp,
   team,
   host,
+  wait,
   connect: () => require('./connect').connect(process.argv.slice(3)),
   version,
   '--version': version,

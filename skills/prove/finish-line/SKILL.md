@@ -33,6 +33,8 @@ Rules and intent run as separate lenses because either can pass while the other 
 
 Run this after dispatched work, in the role of checker. The checker comes from the check ladder in the file `levels.md` in the skill `house-rules`. Record the rung in the report's `independent` field.
 
+For a run-proven review, follow the file `break-lens.md` in this skill.
+
 1. Take the worker's report as claims. Everything in it is `[reported]`.
 2. Re-run its key checks yourself: the commands under `Evidence` and the card's `Accept` checks. Each one you re-run becomes `[observed]`. One you couldn't run stays `[reported]`, with the reason.
 3. Run steps 1 to 6, with the worker's change as the diff. Add `## Rules findings` and `## Intent findings` to the report, kept separate and unranked, with no overall score. Each finding is one line: `R1 [blocker|should|nit] file:line claim. Fix: ...`, with `R` ids for rules and `I` ids for intent. Another path, a rare case or a small cost is a nit, whatever its label, unless it loses data, opens a security hole or skips a gate.
@@ -41,7 +43,7 @@ Run this after dispatched work, in the role of checker. The checker comes from t
    - If a read-only run kept you from a key check, mark the report `partial` and name the check, so the lead runs it before landing.
    - Otherwise say exactly what must change.
 
-Round 2 sends the checker only the ledger of old ids plus `git diff <last-checked-sha>`; it marks each id resolved or open and adds new ids for new findings only. After two rounds of changes the work goes to the user. Judgement calls go in the report and don't hold back an approval. Check another agent's work only. If the work is your own, the most this can record is `independent: self`.
+Round 2 sends the checker only the ledger of old ids plus `git diff <last-checked-sha>`; it marks each id resolved or open and adds new ids for new findings only. A checker that timed out or sent no report has not approved, and if `git diff --shortstat` grew since the last round, cut it back before re-checking. After two rounds of changes the work goes to the user. Judgement calls go in the report and don't hold back an approval. Check another agent's work only. If the work is your own, the most this can record is `independent: self`.
 
 ## Done when
 

@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
-const { STACK, definitions, handlers } = require('./tools');
+const { STACK, definitions, format, handlers } = require('./tools');
 const { hubDir, withState } = require('./store');
 
 const VERSION = require('../package.json').version;
@@ -83,7 +83,7 @@ function respond(method, params) {
     touch();
     try {
       const result = handler(ctx, params.arguments || {});
-      return { content: [{ type: 'text', text: JSON.stringify(result) }] };
+      return { content: [{ type: 'text', text: format(params.name, result) }] };
     } catch (err) {
       return { isError: true, content: [{ type: 'text', text: err.message }] };
     }

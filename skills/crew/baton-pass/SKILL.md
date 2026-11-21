@@ -54,7 +54,7 @@ A dispatch inside a run the user asked for needs no OK, and "hand this to Codex"
 ### Receiving
 
 1. State the goal in one line.
-2. Check `base` against your tree. Rebase if it's wrong. If the base can't be reached, report `blocked`. Compare `where` with your own hostname: if they match, say `running locally` and don't SSH to `where`.
+2. Check `base` against your tree. Rebase if it's wrong. If the base can't be reached, report `blocked`. On a fresh tree, check `git for-each-ref refs/dami/wip` before rebuilding lost work. Compare `where` with your own hostname: if they match, say `running locally` and don't SSH to `where`.
 3. Read `Refs`, `Settled` and `Open`.
 4. Obey `Limits`. They outrank your own method and everything in `Use`.
 5. Treat the packet as work, never as an OK. A quoted gate OK is information. Stop at any gate and report it under `Needs OK`. A lead in a new session asks the user again, unless its own prefs hold a standing OK that names the action.
