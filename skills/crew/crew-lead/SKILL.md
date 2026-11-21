@@ -1,6 +1,6 @@
 ---
 name: crew-lead
-description: "Use when a ready chart, several cards or a long-running goal should go to a team of agents. Merging, opening PRs and outward steps need OK."
+description: "Use when a chart, several cards, a long goal, or an open-ended improve, optimise, fix-all or review-PRs goal should go to a team. Merging and outward steps need OK."
 user-invocable: false
 ---
 # Crew lead
@@ -9,7 +9,7 @@ Job: Own a graph or goal and get it finished by a team at the highest safe concu
 Takes: a chart, several cards, or an agreed goal.   Gives: one integration branch with everything resolved, and a closing report.
 Team moves: all of them. Tools for each are in the file `levels.md` in the skill `house-rules`.
 
-For a long-running goal, follow the file `standing-goal.md` in this skill, and run the steps below for each large chunk.
+For a long-running goal, follow the file `standing-goal.md` in this skill, and run the steps below for each large chunk. For an open goal with no fixed end (improve, optimise, polish, fix all), run the Race loop below. Every turn follows the Lead contract.
 
 ## Steps
 
@@ -21,6 +21,7 @@ For a long-running goal, follow the file `standing-goal.md` in this skill, and r
    - `base` at the integration tip, and `Asked` and `Limits` carried unchanged
    - the card's `Accept`, its agreed seam, its `touches`, and a budget set with the budget move: 30 minutes unless the card says more
    - `Use` naming the block that resolves its type, such as `failing-test-first`, plus `finish-line`
+   - `model:` set from the Models table in the file `levels.md` in the skill `house-rules`, never inherited
 
    Choose an agent kind only when it matters. Otherwise use any kind the see team move shows. A card with several plausible approaches, cheap to compare, goes through the route `race`.
 6. **Receive.** A worker ends with a report and its code. Every claim in the report is `[reported]`. Cross gates in `Needs OK` yourself. Send glossary candidates in `Learned` to the skill `shared-words`, and pin traps with the remember move.
@@ -32,6 +33,25 @@ For a long-running goal, follow the file `standing-goal.md` in this skill, and r
    3. Use the skill `merge-case` to open or ready the PR, and close cards the tracker's way, both under the OK.
    4. List the worktrees left for the user to discard with `git worktree remove`.
    5. Write the closing report.
+
+## Race loop
+
+For open goals.
+
+1. State a stop bar (a score, a size, a reviewer verdict) or a budget.
+2. Run N parallel attempts with different stances, N being 3 at hub, through the race move.
+3. An independent judge, or a bench, picks the best. Land it.
+4. Repeat until the bar or the budget is reached.
+
+Never advise abandoning a goal before one parallel round has run, and put any stop advice next to that round's numbers.
+
+## Lead contract
+
+- On a worker notification, take the handback as the result. Don't read its output file; update the board, write one status line, and make no other call unless a decision or a spawn is due. If other workers are due within minutes, batch.
+- One card per worker. At about 150k context, or at card end, a worker returns its report, and the next card starts a fresh worker from a packet, never a resumed one.
+- Commit the integration branch after every landing, and write a one-line bench state note before any long wait. If the folder isn't a git repo, `git init` before the run.
+- End every lead turn with the `status` shape from the file `artifacts.md` in the skill `house-rules`.
+- When the run finishes, notify the user unasked, through the host's push or message tool.
 
 ## The wave rule
 
@@ -62,7 +82,7 @@ A refusal or a stopped run comes back to the lead with its reason.
 |---|---|
 | Too many active agents | Wait for a result, then dispatch again. This isn't a failure |
 | A loop brake, pause or hold | Dispatch nothing. Report what has landed and what remains, and wait for the user |
-| Timed out or over budget | Its agent was stopped mid-turn. Split the card, or re-dispatch with more budget |
+| Timed out or over budget | Its agent was stopped mid-turn. Split the card, or re-dispatch with more budget. A checker that timed out or sent no report has not approved |
 | Two rounds of changes spent | Show the user the notes and leave the retry to them |
 | Ended with no report | Read its last reply, then steer it or re-dispatch with a sharper packet |
 | Failed | Fix the packet or reslice the card |
