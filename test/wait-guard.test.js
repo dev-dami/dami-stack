@@ -42,3 +42,24 @@ test('plain commands and short sleeps pass, and bad input never blocks', () => {
   assert.strictEqual(run(null, 'not json').status, 0);
   assert.strictEqual(spawnSync(process.execPath, [GUARD], { input: JSON.stringify({ tool_name: 'Read', tool_input: { timeout: 900000 } }) }).status, 0);
 });
+
+test('sleep durations count their units', () => {
+  assert.strictEqual(run({ command: 'sleep 5m' }).status, 2);
+  assert.strictEqual(run({ command: 'sleep 1h' }).status, 2);
+  assert.strictEqual(run({ command: 'sleep 4m' }).status, 0);
+  assert.strictEqual(run({ command: 'sleep 240' }).status, 0);
+});
+
+test('a timeout bounds only the command it wraps', () => {
+  assert.strictEqual(run({ command: 'timeout 10 true; sleep 300' }).status, 2);
+  assert.strictEqual(run({ command: 'timeout 240 sleep 600' }).status, 0);
+});
+
+test('a busy poll loop with no sleep is refused', () => {
+  assert.strictEqual(run({ command: 'while ! gh run view 123 --exit-status; do :; done' }).status, 2);
+});
+
+test('loops that end on their own pass', () => {
+  assert.strictEqual(run({ command: 'while read line; do echo "$line"; sleep 1; done < list.txt' }).status, 0);
+  assert.strictEqual(run({ command: 'n=0; while [ "$n" -lt 3 ]; do sleep 1; n=$((n+1)); done' }).status, 0);
+});
