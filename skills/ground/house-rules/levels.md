@@ -44,6 +44,19 @@ Levels degrade per move, not as a whole.
 | look back | session logs | session logs | session logs | session logs |
 | other machine | not available (a packet the user carries) | not available | not available | not available |
 
+## Models
+
+Always pass the model when you start a helper, through `model` on `team_ask`, the host subagent tool's model field, or `--model`. Never inherit the lead's.
+
+| Role | Model |
+|---|---|
+| Lead | Opus 5.5, the session model. Never the top-price tier for orchestration or Bash |
+| Implementation worker | Opus 5.5 at medium effort, high for the hardest card |
+| Scout, checker of mechanical claims, chores (run, wait, scrape, fetch, rename) | Sonnet 5.5; Haiku 5.5 for pure polling |
+| Judge, root cause | Opus 5.5 at high effort. The top tier only for a named card, short-lived: after two failed runs, or when the user names it |
+
+Cap effort at xhigh, and raise it one step only with a stated reason. The Sonnet rows are `[untested]` until an eval run (the file `eval-run.md` in the skill `agent-prose`) shows they match.
+
 ## Hub
 
 Plan around these.

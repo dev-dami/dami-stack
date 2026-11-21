@@ -120,6 +120,8 @@ role: worker | scout | checker | lead
 repo: 3f9a1c2
 base: <branch>@<sha>
 return: final message | file:<path>
+model: <model>          # optional: see Models in levels.md
+effort: <level>         # optional
 ---
 ## Goal      one sentence: what is true when this is finished
 ## Asked     the user's numbered items, their words, carried unchanged

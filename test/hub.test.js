@@ -18,6 +18,7 @@ process.stdin.on('data', (d) => { input += d; });
 process.stdin.on('end', () => {
   if (input.includes('please crash')) { console.error('boom'); process.exit(3); }
   if (input.includes('please hang')) { setTimeout(() => {}, 60000); return; }
+  if (input.includes('show args')) { console.log('args: ' + process.argv.slice(2).join(' ')); return; }
   console.log('fake reply to: ' + input.split('\\n').pop());
 });`);
 fs.writeFileSync(fakeCli, process.platform === 'win32' ? `@node "${fakeAgent}" %*\r\n` : `#!/bin/sh\nexec node "${fakeAgent}" "$@"\n`);
@@ -114,6 +115,15 @@ test('team_ask starts an agent and returns its reply, and to the inbox as well',
   assert.match(run.reply, /fake reply to: what is 2 \+ 2\?/);
   const { messages } = await a.call('team_inbox');
   assert.ok(messages.some((m) => m.from === 'hub' && m.text.includes('fake reply')));
+  a.close();
+});
+
+test('team_ask passes the model and effort it is given, and refuses odd ones', async () => {
+  const a = connect('claude-code');
+  await a.ready;
+  const run = await a.call('team_ask', { to: 'codex', message: 'show args', model: 'gpt-5-mini', effort: 'low', wait_seconds: 20 });
+  assert.match(run.reply, /-m gpt-5-mini -c model_reasoning_effort=low -$/m);
+  assert.match((await a.call('team_ask', { to: 'codex', message: 'x', model: 'a; rm -rf /' })).error, /model holds/);
   a.close();
 });
 
