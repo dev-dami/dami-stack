@@ -8,7 +8,7 @@ Scope is what the user named, else the diff from the merge-base through the work
 
 ## Dispatch
 
-Send adversaries through the race move: 3 at hub, 2 at host as `dami:checker`, 1 clean pass at solo labelled `self`. Take other kinds first, per the check ladder in the file `levels.md` in the skill `house-rules`. Each works in its own isolated worktree with the scope's uncommitted changes copied in, may run anything there, and commits nothing. The packet holds the scope, `Asked`, and this brief:
+Send adversaries through the race move: 3 at hub, 2 at host as `dami:checker`, 1 clean pass at solo labelled `self`. Take other kinds first, per the check ladder in the file `levels.md` in the skill `house-rules`. Each works in its own isolated worktree with the scope's uncommitted changes copied in, may run anything there, and commits nothing. At host, start each `dami:checker` with the Agent tool's `isolation: "worktree"`, and have it write repro scripts and tests only under `$TMPDIR` or that worktree. The packet holds the scope, `Asked`, and this brief:
 
 > Try to break this change against the Asked intent. Prove each finding with a run against the real code: a failing test, a repro script, a command. Report each as `B1 [blocker|should|nit] <cmd> -> got X, intent needs Y`, with the output it printed. Leave out style, naming, and risks that need some future change to matter. Leave out anything you didn't run. No findings is a valid answer.
 

@@ -89,7 +89,7 @@ Inside the Deck app, an optional adapter in `house-rules` maps the same moves to
 
 Levels degrade per move, so a block written once still runs as a plain sequence with nobody else around, and says which level it used.
 
-**Roles.** On Claude Code the plugin adds four subagents, `dami:scout`, `dami:checker`, `dami:judge` and `dami:worker`. Each pins its model, effort and tools, so the read-only roles can't edit, and each reads the same worker card.
+**Roles.** On Claude Code the plugin adds four subagents, `dami:scout`, `dami:checker`, `dami:judge` and `dami:worker`. Each pins its model, effort and tools, so the read-only roles have no edit tools, and each reads the same worker card.
 
 **Routes.** A route is a named path over blocks. `idea-to-merge` runs interview, chart, crew, PR body, debrief. `bug` runs root-cause hunt, finish check, then a debrief if it was costly. There are 12 routes in `skills/ground/house-rules/routes.md`, and `/dami:help` picks one for the state you are in.
 
