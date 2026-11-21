@@ -172,7 +172,7 @@ independent: other-kind | same-kind-fresh | self      # for checks only
 ## Learned    durable facts: glossary candidates, traps worth pinning
 ```
 
-Also under 3,500 characters whenever it returns as a message or final reply, for the same reason. Nothing in-scope, reversible and unblocked is left open: it gets fixed first. In the lead's report to the user, `Needs OK` and `Open` merge into `## Needs you`, two items at most. Drop empty sections. A checker adds `## Rules findings` and `## Intent findings`, kept separate.
+Also under 3,500 characters whenever it returns as a message or final reply, for the same reason. Nothing in-scope, reversible and unblocked is left open: it gets fixed first. In the lead's report to the user, `Needs OK` and `Open` merge into `## Needs you`, two items at most. Drop empty sections. A checker adds `## Rules findings` and `## Intent findings`, kept separate, one line per finding: `R1 [blocker|should|nit] file:line claim. Fix: ...` (`I1` for intent).
 
 ## status
 
