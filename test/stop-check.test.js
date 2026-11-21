@@ -80,3 +80,40 @@ test('without last_assistant_message it reads the transcript tail', () => {
 test('links to files or other hosts pass', () => {
   assert.strictEqual(check({ last_assistant_message: 'See [x](https://github.com/o/r/blob/main/x.js) and [d](https://example.com/a)' }), '');
 });
+
+// A repo with one commit and a hub state holding the given runs, as the hook would read it.
+function hubRepo(runs) {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dami-stop-hub-'));
+  const repo = path.join(tmp, 'repo');
+  fs.mkdirSync(repo);
+  const env = { ...process.env, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@t', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@t' };
+  const git = (...args) => spawnSync('git', args, { cwd: repo, env, encoding: 'utf8' }).stdout.trim();
+  git('init', '-q');
+  git('commit', '-q', '--allow-empty', '-m', 'init');
+  const hub = path.join(tmp, 'hub');
+  const team = path.join(hub, git('rev-list', '--max-parents=0', 'HEAD').slice(0, 7));
+  fs.mkdirSync(team, { recursive: true });
+  fs.writeFileSync(path.join(team, 'state.json'), JSON.stringify({ runs }));
+  const stop = (msg) => {
+    const r = spawnSync(process.execPath, [HOOK], {
+      cwd: repo, env: { ...process.env, HOME: tmp, DAMI_HUB_DIR: hub, DAMI_RUN: '', DAMI_STOP_CHECK: '' }, input: JSON.stringify({ cwd: repo, last_assistant_message: msg }), encoding: 'utf8',
+    });
+    return r.stdout;
+  };
+  return { stop, done: () => fs.rmSync(tmp, { recursive: true, force: true }) };
+}
+
+test('a ghost hub run, dead pid or long past its timeout, does not block', () => {
+  const deadPid = spawnSync(process.execPath, ['-e', '0']).pid;
+  const ghosts = hubRepo({
+    r1: { status: 'running', pid: deadPid, started: Date.now() - 3 * 3600000, timeoutMinutes: 15 },
+    r2: { status: 'running', pid: deadPid, started: Date.now() - 60000, timeoutMinutes: 15 },
+    r3: { status: 'running', pid: process.pid, started: Date.now() - 3 * 3600000, timeoutMinutes: 15 },
+  });
+  assert.strictEqual(ghosts.stop('All set.'), '');
+  ghosts.done();
+
+  const live = hubRepo({ r1: { status: 'running', pid: process.pid, started: Date.now() - 60000, timeoutMinutes: 15 } });
+  assert.strictEqual(JSON.parse(live.stop('All set.')).decision, 'block');
+  live.done();
+});

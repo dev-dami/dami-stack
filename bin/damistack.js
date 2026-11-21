@@ -299,7 +299,8 @@ function wait() {
     try { return JSON.parse(fs.readFileSync(file, 'utf8')).runs || {}; } catch { return null; }
   };
   const first = runs() || {};
-  if (!ids.length) ids = Object.keys(first).filter((id) => first[id].status === 'running');
+  const { runAlive } = require('./team-state');
+  if (!ids.length) ids = Object.keys(first).filter((id) => runAlive(first[id]));
   const unknown = ids.find((id) => !first[id]);
   if (unknown) { console.error(`damistack wait: no run ${unknown}`); return 2; }
   if (!ids.length) { console.error('damistack wait: no runs are running'); return 0; }
