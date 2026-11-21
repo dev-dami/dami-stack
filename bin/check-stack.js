@@ -72,7 +72,11 @@ for (const name of commandNames) {
 // Routing map size.
 const mapFile = 'skills/ground/house-rules/routing-map.md';
 if (!fs.existsSync(abs(mapFile))) fail(mapFile, 'missing');
-else if (fs.statSync(abs(mapFile)).size >= 3072) fail(mapFile, 'must be under 3,072 bytes');
+else {
+  if (fs.statSync(abs(mapFile)).size >= 2700) fail(mapFile, 'must be under 2,700 bytes');
+  const map = fs.readFileSync(abs(mapFile), 'utf8');
+  for (const must of ['4 minutes', 'Needs you']) if (!map.includes(must)) fail(mapFile, `lost the rule naming "${must}"`);
+}
 
 // The worker card that the MCP server sends Claude subagents and hub runs.
 const workerFile = 'skills/ground/house-rules/worker.md';
