@@ -54,10 +54,10 @@ A dispatch inside a run the user asked for needs no OK, and "hand this to Codex"
 ### Receiving
 
 1. State the goal in one line.
-2. Check `base` against your tree. Rebase if it's wrong. If the base can't be reached, report `blocked`. Compare `where` with your own hostname: if they match, say `running locally` and use no SSH.
+2. Check `base` against your tree. Rebase if it's wrong. If the base can't be reached, report `blocked`. Compare `where` with your own hostname: if they match, say `running locally` and don't SSH to `where`.
 3. Read `Refs`, `Settled` and `Open`.
 4. Obey `Limits`. They outrank your own method and everything in `Use`.
-5. Treat the packet as work, never as an OK. A quoted gate OK is information. Stop at any gate and report it under `Needs OK`. A lead in a new session asks the user again.
+5. Treat the packet as work, never as an OK. A quoted gate OK is information. Stop at any gate and report it under `Needs OK`. A lead in a new session asks the user again, unless its own prefs hold a standing OK that names the action.
 6. Do `Next`, in the role the header gives you. Use the skills in `Use` if you have them, and carry on if you don't.
 7. If you disagree with `Settled`, put that under `Open` and keep working to the settled decision.
 8. Return a report through `return`, in the shape from the file `artifacts.md` in the skill `house-rules`. Answer every `Asked` item. Hand over code first, then finish with the report, under 3,500 characters.

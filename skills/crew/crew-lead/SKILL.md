@@ -14,7 +14,7 @@ For a long-running goal, follow the file `standing-goal.md` in this skill, and r
 ## Steps
 
 1. **Start.** Detect the level, read the chart, and say level and team once: `Level: hub, kinds claude, codex.`
-2. **Take one OK.** List every outward step the run may need: pushing the branch, a draft PR, the final PR, closing tracker cards. Check the user's prefs first: a standing OK already covers the steps it names. Ask once, for the rest of the list. Local work carries on while the answer waits, and outward steps hold until it comes. Ask again only for a new gate class.
+2. **Take one OK.** List every outward step the run may need: pushing the branch, a draft PR, the final PR, closing tracker cards. Check the user's prefs first: a standing OK already covers the steps it names. Ask once, for the rest of the list. Local work carries on while the answer waits, and outward steps hold until it comes. Ask again for any step off the list.
 3. **Make the integration branch** locally and check it out in the tree the team starts from. If the chart is thin on code detail, send one scout first and file its findings in bench `notes/` for later packets.
 4. **Find the wave.** The wave is every card whose `needs` have landed and been committed. Put those cards on the board and no others (see The wave rule). Two cards that touch the same files land one after the other, so hold the second back, or expect a merge.
 5. **Dispatch each card** by type. `slice`, `try` and `chore` go to workers, `probe` to a scout. A `decide` card is yours, since only the lead interviews: use the skill `question-tree`. Each gets one packet from the skill `baton-pass`, with:
@@ -40,7 +40,7 @@ For open goals.
 
 1. State a stop bar (a score, a size, a reviewer verdict) or a budget.
 2. Run N parallel attempts with different stances, N being 3 at hub, through the race move.
-3. An independent judge, or a bench, picks the best. Land it.
+3. An independent judge, or a bench, picks the best. Land it once it passes the check in step 7. If none passes, land nothing.
 4. Repeat until the bar or the budget is reached.
 
 Never advise abandoning a goal before one parallel round has run, and put any stop advice next to that round's numbers.

@@ -4,7 +4,7 @@ For showing that a cut, a rewrite or a model swap changed nothing that matters. 
 
 ## Setup
 
-1. **Blind the candidate.** No eval, test, judge, rubric, score or benchmark in any path, branch, folder name or prompt the candidate sees. The prompt is organic and shaped like a real user's request.
+1. **Blind the candidate.** No path, branch, folder name or prompt the candidate sees names the evaluation: no eval, judge, rubric, score or benchmark. The project's own test files are fine. The prompt is organic and shaped like a real user's request.
 2. **Isolate.** N candidates per arm, three at least, each in its own clean worktree from the same commit, with the arm's documents installed and nothing else changed.
 3. **Write the rubric** before any run: 3 to 6 criteria, each checkable from the output or the transcript. Only the judge sees it.
 

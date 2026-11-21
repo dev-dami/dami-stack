@@ -16,7 +16,7 @@ Takes: a diff and a report.   Gives: a PR body.
 4. **Prove it with before and after.** Use a screenshot when the change is visual and that's practical. Otherwise use execution output showing the exact test that flipped. Take evidence from the report and keep its labels: a `[reported]` line stays `[reported]`.
 5. **Judge the danger.** Say whether it's cheaply reversible, and destructive or hard to undo means no. Add a one-word blast radius, with optional detail, thinking about consumers, layout and mobile.
 6. **Say what checked it.** Name the checker and its `independent` value, or say no check ran. Carry over anything under the report's `Open`, `Needs OK` and `Out of scope`.
-7. **Publish.** Show the body. An explicit request such as "open the PR", or a standing OK in the user's prefs that covers it, is already the OK for that push and PR, so go ahead. Otherwise ask first. Push and open through the host's own `gh`, passing the body from a file. End by printing the PR URL alone on a line.
+7. **Publish.** Show the body. An explicit request such as "open the PR", or a standing OK in the user's prefs that names both the push and the PR, is already the OK for that push and PR, so go ahead. Otherwise ask first. Push and open through the host's own `gh`, passing the body from a file. End by printing the PR URL alone on a line.
 
 ## Shape
 

@@ -8,8 +8,8 @@ For any user-facing visual deliverable, settled or not. Read and update the `tas
 
 1. State the message in one line before any visuals.
 2. A scout gathers 3 to 5 strong real references and names the design language they share.
-3. Two or three workers build different directions, using established motion and component libraries.
-4. A judge of another kind scores screenshots on message clarity, hierarchy, colour theory, text density, motion, and originality against a template look.
+3. Two or three workers build different directions, using established motion and component libraries. At solo, build them yourself.
+4. A judge of another kind scores screenshots on message clarity, hierarchy, colour theory, text density, motion, and originality against a template look. With no other kind, use the next rung of the check ladder in the file `levels.md` in the skill `house-rules`, and name it.
 5. Share the winner and the runners-up as screenshots before reporting done.
 
 ## The variants

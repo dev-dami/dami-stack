@@ -53,7 +53,7 @@ When they say it's done, check from step 1 again before you use the host.
 
 - `team_ask {to: claude, host: <name>, message: <packet>}`. A remote run gets the working folder as it is now and runs on its own worktree there. Write mode brings its commit back as a branch. See levels.md in the skill house-rules.
 - `team_host {action: remote_control, name, control: start}` lets the user drive sessions there from claude.ai/code. It runs until stopped.
-- For unattended runs on a root host, use the auto permission mode: it starts as root where bypass doesn't.
+- `team_ask` starts Claude in acceptEdits for write and the default mode for read, on any host, and `asRoot` changes neither. A command such a run needs must already be allowed in that machine's Claude settings `[assumed]`. For a run you start over ssh on a root host, use the auto permission mode: it starts as root where bypass doesn't.
 - When the user says stop, stop the hub's Remote Control with `control: stop`, and say whether any other Claude process is still running there.
 
 ## Done when

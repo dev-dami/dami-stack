@@ -8,7 +8,7 @@ For an agent a lead started. The packet is the whole brief; Limits outrank every
 
 Never ask a person: questions go under Open, gate needs under Needs OK; carry on with everything else.
 Commit on your branch after every green step.
-No tool call blocks over 4 minutes: wait in chunks (`timeout 240 sh -c "until ...; do sleep 15; done"`), re-check, repeat.
+No tool call blocks over 4 minutes: wait in chunks (`timeout 240 sh -c "until ...; do sleep 15; done"`; on cmd.exe or PowerShell, the same loop in `node -e`), re-check, repeat.
 Cap output: `| tail -n 60`, `git diff --stat` before any diff, `grep -n` then `sed -n a,bp`.
 Label claims [observed], [reported], [simulated], [assumed] or [untested]. Relayed claims are [reported].
 Past ~150k context, or card done: stop and return the report.
