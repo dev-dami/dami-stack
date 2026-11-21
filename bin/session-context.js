@@ -2,7 +2,7 @@
 // Plugin SessionStart hook: its output becomes session context, which is what makes skills proactive.
 // A hub-started run (DAMI_RUN set) prints nothing: the MCP server gives it the worker card.
 // Otherwise it prints the routing map, the user's standing preferences from ~/.dami/prefs.md,
-// this machine's name, and a restore hint when a WIP checkpoint holds work the tree lost.
+// this machine's name, and a restore hint when a WIP checkpoint on HEAD holds work the tree lost.
 // A hook must never break a session, so any missing file prints nothing and exits 0.
 const { spawnSync } = require('child_process');
 const fs = require('fs');
@@ -23,16 +23,18 @@ function age(seconds) {
   return `${Math.round(seconds / 86400)}d`;
 }
 
-// One line when refs/dami/wip/<branch> is newer than HEAD and the tree is clean: the
-// checkpoint then holds work this tree lost, and git restore brings it back.
+// One line when refs/dami/wip/<branch> sits on the current HEAD and the tree is clean: the
+// checkpoint then holds work this tree lost, and git restore brings it back. A checkpoint on
+// any other commit would overwrite what HEAD has, so it gets no line, whatever the dates say.
 function restoreHint() {
   const branch = git(['branch', '--show-current']);
   if (!branch) return '';
   const ref = `refs/dami/wip/${branch}`;
-  const wipTime = Number(git(['log', '-1', '--format=%ct', ref, '--']));
-  const headTime = Number(git(['log', '-1', '--format=%ct', 'HEAD', '--']));
-  if (!wipTime || !headTime || wipTime <= headTime) return '';
+  const parent = git(['rev-parse', '-q', '--verify', `${ref}^1`]);
+  if (!parent || parent !== git(['rev-parse', 'HEAD'])) return '';
   if (git(['status', '--porcelain']) !== '') return '';
+  const wipTime = Number(git(['log', '-1', '--format=%ct', ref, '--']));
+  if (!wipTime) return '';
   return `WIP checkpoint ${age(Date.now() / 1000 - wipTime)} ago: git restore --source=${ref} --worktree -- .\n`;
 }
 

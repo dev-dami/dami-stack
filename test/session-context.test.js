@@ -55,7 +55,7 @@ test('the Machine line shows without DAMI_RUN and not with it', () => {
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
-test('the restore line shows only for a clean tree and a newer checkpoint', () => {
+test('the restore line shows only for a clean tree and a checkpoint on HEAD', () => {
   const dir = repo();
   assert.ok(!run(dir).includes('WIP checkpoint'), 'no ref, no line');
 
@@ -74,5 +74,22 @@ test('the restore line shows only for a clean tree and a newer checkpoint', () =
   const later = new Date(Date.now() + 3600 * 1000).toISOString();
   git(dir, ['commit', '-q', '-m', 'later'], { GIT_COMMITTER_DATE: later, GIT_AUTHOR_DATE: later });
   assert.ok(!run(dir).includes('WIP checkpoint'), 'HEAD newer than the ref, no line');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('no restore line once HEAD moves to another commit, even one with an older date', () => {
+  const dir = repo();
+  fs.writeFileSync(path.join(dir, 'a.txt'), 'wip\n');
+  spawnSync(process.execPath, [CHECKPOINT], { cwd: dir, input: '{}', env: { ...process.env, ...GIT_ENV } });
+  git(dir, ['checkout', '--', 'a.txt']);
+  assert.ok(run(dir).includes('WIP checkpoint '), 'checkpoint on HEAD, clean tree');
+
+  // A teammate's commit pulled in later, with a committer date older than the checkpoint.
+  fs.writeFileSync(path.join(dir, 'a.txt'), 'theirs\n');
+  fs.writeFileSync(path.join(dir, 'g.txt'), 'new\n');
+  git(dir, ['add', '-A']);
+  const older = new Date(Date.now() - 1800 * 1000).toISOString();
+  git(dir, ['commit', '-q', '-m', 'theirs'], { GIT_COMMITTER_DATE: older, GIT_AUTHOR_DATE: older });
+  assert.ok(!run(dir).includes('WIP checkpoint'), 'checkpoint parent is not HEAD, no line');
   fs.rmSync(dir, { recursive: true, force: true });
 });
