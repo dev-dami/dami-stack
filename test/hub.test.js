@@ -63,6 +63,30 @@ test('a client joins and receives the routing map', async () => {
   a.close();
 });
 
+test('Claude Code gets the short worker card, not the routing map', async () => {
+  const a = connect('claude-code');
+  const { result } = await a.ready;
+  assert.doesNotMatch(result.instructions, /## Routes/);
+  assert.match(result.instructions, /For an agent a lead started\./);
+  a.close();
+});
+
+test('the session hook prints the map and prefs, and nothing inside a hub run', () => {
+  const home = fs.mkdtempSync(path.join(tmp, 'home-'));
+  const hook = path.join(__dirname, '..', 'bin', 'session-context.js');
+  const run = (env) => spawnSync(process.execPath, [hook], { env: { ...process.env, HOME: home, USERPROFILE: home, DAMI_RUN: '', ...env }, encoding: 'utf8' });
+  assert.match(run({}).stdout, /## Routes/);
+  assert.doesNotMatch(run({}).stdout, /standing preferences/);
+  fs.mkdirSync(path.join(home, '.dami'));
+  fs.writeFileSync(path.join(home, '.dami', 'prefs.md'), `show: share <file>\n${'x'.repeat(3000)}`);
+  const withPrefs = run({}).stdout;
+  assert.match(withPrefs, /## Your standing preferences\nshow: share <file>/);
+  assert.ok(withPrefs.split('## Your standing preferences')[1].length < 1600);
+  const inRun = run({ DAMI_RUN: 'r1' });
+  assert.strictEqual(inRun.stdout, '');
+  assert.strictEqual(inRun.status, 0);
+});
+
 test('two agents exchange messages, and each reads a message once', async () => {
   const a = connect('claude-code');
   const b = connect('codex-mcp-client');

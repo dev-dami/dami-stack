@@ -74,6 +74,11 @@ const mapFile = 'skills/ground/house-rules/routing-map.md';
 if (!fs.existsSync(abs(mapFile))) fail(mapFile, 'missing');
 else if (fs.statSync(abs(mapFile)).size >= 3072) fail(mapFile, 'must be under 3,072 bytes');
 
+// The worker card that the MCP server sends Claude subagents and hub runs.
+const workerFile = 'skills/ground/house-rules/worker.md';
+if (!fs.existsSync(abs(workerFile))) fail(workerFile, 'missing');
+else if (fs.statSync(abs(workerFile)).size >= 1500) fail(workerFile, 'must be under 1,500 bytes');
+
 // Reference forms. The artifact header key "dami: card" has a space after the colon and stays legal.
 const skillFiles = fs.existsSync(abs('skills')) ? walk('skills') : [];
 for (const file of skillFiles) {

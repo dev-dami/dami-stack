@@ -61,7 +61,8 @@ Workers and scouts send questions up through `Open` and gate needs through `Need
 - `deck-adapter.md`: what changes inside a Deck thread. Read it only when `levels.md` sends you there.
 - `artifacts.md`: artifact shapes, packet, report, evidence labels, ref forms, bench layout. Read before writing or receiving any artifact.
 - `routes.md`: routes, the navigator, every block and command. Read when unsure what fits.
-- `routing-map.md`: the always-on summary a session hook injects on Claude Code. Skip it if it is already in your context.
+- `routing-map.md`: the lead's always-on summary. The session hook injects it on Claude Code; the dami hub's MCP server sends it to other clients. Skip it if it is already in your context.
+- `worker.md`: the short card the MCP server sends Claude subagents and hub runs in place of the map: role limits, waits, output caps, the report. Read it when a lead started you.
 - `scripts/bench.js`: run `node <house-rules>/scripts/bench.js` to print the bench path and create the bench. `<house-rules>` is this skill's folder. Expand `~` yourself, because cmd.exe doesn't.
 
 ## Done when

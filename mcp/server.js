@@ -32,10 +32,12 @@ function touch() {
   });
 }
 
+// Claude Code's session hook already gives the lead the routing map, so a Claude
+// client here is most likely a subagent or hub run: it gets the short worker card.
 function instructions() {
-  const file = path.join(STACK, 'skills', 'ground', 'house-rules', 'routing-map.md');
-  const map = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
-  return `${map}\nThe dami hub connects the agents working in this repo. Use team_ask to get another agent's work or opinion, and read skills with the skills tool if your client has no copy.`;
+  const file = path.join(STACK, 'skills', 'ground', 'house-rules', me.kind === 'claude' ? 'worker.md' : 'routing-map.md');
+  const text = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  return `${text}\nThe dami hub connects the agents working in this repo. Use team_ask to get another agent's work or opinion, and read skills with the skills tool if your client has no copy.`;
 }
 
 // Claude Code has these as plugin commands, so they would only appear twice there.
@@ -81,7 +83,7 @@ function respond(method, params) {
     touch();
     try {
       const result = handler(ctx, params.arguments || {});
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+      return { content: [{ type: 'text', text: JSON.stringify(result) }] };
     } catch (err) {
       return { isError: true, content: [{ type: 'text', text: err.message }] };
     }
