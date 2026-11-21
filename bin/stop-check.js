@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Plugin Stop hook: one deterministic nudge before the agent ends its turn.
 // 1. Work is still running (background tasks, or hub runs) but the message has no
-//    `Done:` line, so the user would have to chase the status.
+//    `Done:` line, so the user would have to chase the status. A silent wake (empty
+//    message) passes: a wake that needs nothing ends the turn silently.
 // 2. A GitHub repo, PR, issue, release or compare link sits only behind markdown text,
 //    so the user can't copy the raw URL.
 // It blocks at most once per stop (stop_hook_active), never for hub workers (DAMI_RUN:
@@ -60,7 +61,8 @@ function reasons(input, running) {
   if (typeof msg !== 'string') return []; // Nothing to judge.
   const out = [];
   const busy = (Array.isArray(input.background_tasks) && input.background_tasks.length > 0) || running();
-  if (busy && !/^\W*Done:\s*(yes|no)\b/im.test(msg)) out.push(RUNNING);
+  // An empty message is a wake that needed nothing, which ends the turn silently by rule.
+  if (busy && msg.trim() && !/^\W*Done:\W*(yes|no)\b/im.test(msg)) out.push(RUNNING);
   const urls = linkUrls(msg);
   if (urls.length) out.push(`Add raw URLs under Links, one per line: ${urls.join(' ')}`);
   return out;

@@ -31,6 +31,15 @@ test('running work with a Done: no line passes', () => {
   assert.strictEqual(check({ background_tasks: [{ id: 'b1' }], last_assistant_message: 'Done: no\n## Running  tests' }), '');
 });
 
+test('a silent wake while work runs passes', () => {
+  assert.strictEqual(check({ background_tasks: [{ id: 'b1' }], last_assistant_message: '' }), '');
+  assert.strictEqual(check({ background_tasks: [{ id: 'b1' }], last_assistant_message: '  \n' }), '');
+});
+
+test('a bold Done: line passes', () => {
+  assert.strictEqual(check({ background_tasks: [{ id: 'b1' }], last_assistant_message: '**Done:** no\n## Running  tests' }), '');
+});
+
 test('a second stop in a row passes', () => {
   assert.strictEqual(check({ stop_hook_active: true, background_tasks: [{ id: 'b1' }], last_assistant_message: 'All set.' }), '');
 });

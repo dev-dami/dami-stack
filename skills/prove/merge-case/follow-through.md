@@ -47,4 +47,4 @@ All of these hold on the latest head:
 
 Merge only under an explicit merge request: merge is G2 and can't be standing. Otherwise stop at ready and print the raw PR URL alone on a line.
 
-Every turn ends in the status shape from the file `artifacts.md` in the skill `house-rules`.
+Every turn that reports ends in the status shape from the file `artifacts.md` in the skill `house-rules`; a wake that needs nothing ends silently.

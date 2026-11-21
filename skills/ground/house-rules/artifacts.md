@@ -176,7 +176,7 @@ Also under 3,500 characters whenever it returns as a message or final reply, for
 
 ## status
 
-What a lead answers when asked for status, and how every turn that leaves work running ends. No header. Under 800 characters.
+What a lead answers when asked for status, and how every turn that leaves work running and reports ends. A wake that needs nothing ends silently instead. No header. Under 800 characters.
 
 ```markdown
 Done: yes | no
