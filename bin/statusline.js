@@ -18,17 +18,25 @@ let input = '';
 process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
   let session = {};
-  try { session = JSON.parse(input); } catch { /* an empty status line is still useful */ }
+  try { session = JSON.parse(input) || {}; } catch { /* an empty status line is still useful */ }
+  if (typeof session !== 'object') session = {};
 
   const dir = (session.workspace && session.workspace.current_dir) || session.cwd || process.cwd();
   const git = spawnSync('git', ['-C', dir, 'branch', '--show-current'], { encoding: 'utf8', windowsHide: true });
   const branch = git.status === 0 ? git.stdout.trim() : '';
   const used = session.context_window && session.context_window.used_percentage;
+  const pick = (obj, key, type) => (obj && typeof obj[key] === type ? obj[key] : undefined);
+  const model = [pick(session.model, 'display_name', 'string'), pick(session.effort, 'level', 'string')].filter(Boolean).join(' · ');
+  const cost = pick(session.cost, 'total_cost_usd', 'number');
+  const added = pick(session.cost, 'total_lines_added', 'number') || 0;
+  const removed = pick(session.cost, 'total_lines_removed', 'number') || 0;
+  const spend = [cost > 0 ? `$${cost.toFixed(2)}` : null, added > 0 || removed > 0 ? `+${added}/-${removed}` : null].filter(Boolean).join(' · ');
 
   const parts = [
     path.basename(dir) + (branch ? ` (${branch})` : ''),
-    session.model && session.model.display_name,
+    model,
     typeof used === 'number' ? `${Math.round(used)}% context` : null,
+    spend,
     teamPart(teamCounts(dir)),
     '/dami:help',
   ].filter(Boolean);
