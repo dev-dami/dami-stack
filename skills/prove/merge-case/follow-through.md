@@ -15,12 +15,12 @@ Say which one before the first pass:
 Go in this order: conflicts, then threads, then CI.
 
 1. **Conflicts.** On `behind` or `dirty`, report which branch needs a rebase onto which base. Never rebase or force-push on your own. Force-push is G2, and only an explicit request clears it.
-2. **Threads.** Triage only findings newer than the last push. Check each against the source, then class it:
+2. **Threads.** Triage every unresolved thread. For review bodies and bot summaries, only those on the current head. Check each against the source, then class it:
    - fix: change the code, push, then reply citing the commit sha.
    - dismiss: reply with a concrete disproof, a file:line or a command and its output.
    - ask: anything touching billing, auth, data loss, security or migrations goes to the user, whatever the reviewer says.
 
-   Bots, CodeRabbit included, are advisory. Never wait on one, and never hold a merge for one. Hold the PR's scope: decline unneeded tests, guards and compatibility shims, and list them as follow-ups.
+   Bots, CodeRabbit included, are advisory. Never wait for a bot to finish reviewing; its posted findings still need fix or dismiss. Hold the PR's scope: decline unneeded tests, guards and compatibility shims, and list them as follow-ups.
 3. **CI.** Read the failing log first. A check that looks flaky gets one rerun, `gh run rerun <id> --failed`. A second failure is a real failure: fix it.
 
 Push the fix before the reply, so the reply can cite its sha. Replies use the comment shape in the file `artifacts.md` in the skill `house-rules`. Replying and resolving are G1: one OK covers them for the run, or a standing prefs line such as `ok: G1 reply to and resolve review threads on my own PRs`.
