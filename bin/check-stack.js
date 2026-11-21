@@ -72,7 +72,22 @@ for (const name of commandNames) {
 // Routing map size.
 const mapFile = 'skills/ground/house-rules/routing-map.md';
 if (!fs.existsSync(abs(mapFile))) fail(mapFile, 'missing');
-else if (fs.statSync(abs(mapFile)).size >= 3072) fail(mapFile, 'must be under 3,072 bytes');
+else {
+  if (fs.statSync(abs(mapFile)).size >= 2700) fail(mapFile, 'must be under 2,700 bytes');
+  const map = fs.readFileSync(abs(mapFile), 'utf8');
+  for (const must of ['4 minutes', 'Needs you']) if (!map.includes(must)) fail(mapFile, `lost the rule naming "${must}"`);
+}
+
+// Standing OKs exist, and merge stays out of them.
+const gatesFile = 'skills/ground/house-rules/gates.md';
+const gates = fs.existsSync(abs(gatesFile)) ? fs.readFileSync(abs(gatesFile), 'utf8') : '';
+if (!gates.includes('## Standing OK')) fail(gatesFile, 'lacks the ## Standing OK section');
+else if (!/Merge[^.\n]*can't be standing/.test(gates.split('## Standing OK')[1])) fail(gatesFile, "Standing OK doesn't say merge can't be standing");
+
+// The worker card that the MCP server sends Claude subagents and hub runs.
+const workerFile = 'skills/ground/house-rules/worker.md';
+if (!fs.existsSync(abs(workerFile))) fail(workerFile, 'missing');
+else if (fs.statSync(abs(workerFile)).size >= 1500) fail(workerFile, 'must be under 1,500 bytes');
 
 // Reference forms. The artifact header key "dami: card" has a space after the colon and stays legal.
 const skillFiles = fs.existsSync(abs('skills')) ? walk('skills') : [];

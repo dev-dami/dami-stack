@@ -38,10 +38,33 @@ Levels degrade per move, not as a whole.
 | race | several isolated `team_ask` runs on one brief, compare branches, the user keeps one | N workers, isolated, compare diffs | N workspaces | one attempt, and say no race ran |
 | check | `team_ask` to another kind, read mode | fresh subagent, or an other-kind workspace if Herdr is up | other-kind workspace | clean second pass, labelled `self` |
 | steer | `team_send` to a running agent. A headless run doesn't read its inbox, so stop it and re-ask with a better packet | subagent message, if supported | none | none |
+| wait | `team_run {id, wait_seconds: 50}`, repeated | a background run with the host's monitor tool, or `timeout 240 sh -c "until <done>; do sleep 15; done"` (on cmd.exe or PowerShell, the same loop in `node -e`), repeated | same as host | same as host |
 | remember | `note` | bench `notes/` | bench `notes/` | bench `notes/` |
 | budget | `timeout_minutes` on `team_ask` | stop condition in the brief, unenforced | same | same |
 | look back | session logs | session logs | session logs | session logs |
 | other machine | not available (a packet the user carries) | not available | not available | not available |
+
+## Models
+
+Always pass the model when you start a helper, through `model` on `team_ask`, the host subagent tool's model field, or `--model`. Never inherit the lead's.
+
+| Role | Model |
+|---|---|
+| Lead, including its finish-line pass and the message that closes a turn | Opus 5.5, the session model. Never the top-price tier for orchestration or Bash |
+| Implementation worker | Opus 5.5 at medium effort, high for the hardest card |
+| Sub-lead (a lead under the top lead) over mechanical cards only: its packets and status replies | Sonnet 5.5 |
+| Scout, checker of mechanical claims, chores (run, wait, scrape, fetch, rename) | Sonnet 5.5; Haiku 5.5 for pure polling |
+| Judge, root cause | Opus 5.5 at high effort. The top tier only for a named card, short-lived: after two failed runs, or when the user names it |
+
+Cap effort at xhigh, and raise it one step only with a stated reason.
+
+Why the Sonnet split falls where it does: three paper cases put each model in the lead's seat, one run per model, so the result is `INCONCLUSIVE` under the file `eval-run.md` in the skill `agent-prose` and reads as a leaning only.
+
+- A packet for a mechanical card plus a one-word status reply: Sonnet matched Opus, in a quarter fewer characters.
+- Closing a turn under a standing OK: a tie. Sonnet asked a question the prefs already settled; Opus left the merge decision outside `Needs you`.
+- Finish-line on its own run: a tie once invented evidence stopped scoring. Sonnet planned an in-scope fix instead of making it, named no gate and skipped the lenses; Opus claimed checks and screenshots it couldn't have made.
+
+No case ran Sonnet as a scout, checker or chore worker, so that row stays `[untested]`. Move a row only on a new eval run.
 
 ## Hub
 

@@ -290,6 +290,8 @@ It uses your normal Herdr session. Set `DAMISTACK_SESSION` to use another.
 
 `npm test` runs `bin/check-stack.js`, which checks names, descriptions, the plugin list, reference forms and gate lines.
 
+`evals/` holds paper cases for showing that a rewrite or a model swap kept the stack's behaviour, how to re-run them on two models, and past results. See `evals/README.md`.
+
 ## Credits
 
 Designed and written for Damilare Osibanjo. Inspired by [Matt Pocock's skills](https://github.com/mattpocock/skills).

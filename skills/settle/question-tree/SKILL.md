@@ -1,6 +1,6 @@
 ---
 name: question-tree
-description: "Use when a plan hides choices that change the result with no sensible default, the user wants their thinking tested, or a decision waits on another person. Skip what defaults can handle."
+description: "Use when a choice has no sensible default and is costly to reverse, the user asks to test their thinking, or a decision waits on another person."
 user-invocable: false
 ---
 # Question tree

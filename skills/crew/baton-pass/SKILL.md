@@ -1,6 +1,6 @@
 ---
 name: baton-pass
-description: "Use when a chunk of work ends, the session runs short, work moves to another agent, tool or person, or you receive a packet. Skip mid-chunk. Starting an unattended agent needs OK."
+description: "Use when work moves to another session, agent, tool or person, the session runs short, or a packet arrives. Unattended agents need OK."
 user-invocable: false
 ---
 # Baton pass
@@ -27,12 +27,14 @@ Mid-chunk, keep working or give the rest to workers. The only move that can appl
 
 Clearing and compressing are the user's keystrokes where the host gives no tool for them, so recommend the move.
 
+Before the user leaves, or before a wait of an hour or more, write the packet anyway and tell the user that clearing the session (`/clear` on Claude Code) and starting from the packet makes resuming cheap. An idle cache expires, and the next turn rewrites the whole context.
+
 ### Sending
 
-1. **Fill the packet** from existing artifacts, using the shape in the file `artifacts.md` in the skill `house-rules`. Tailor `Goal` to the stated focus. Carry `Asked` and `Limits` unchanged. Use references over copies. Label each `State` line. List helpful skills in `Use`, and make the packet make sense without them.
+1. **Fill the packet** from existing artifacts, using the shape in the file `artifacts.md` in the skill `house-rules`. Tailor `Goal` to the stated focus. `Goal` and `Next` say what to achieve, not how. Name skills in `Use`; don't copy their steps. A suspected cause goes under `Open` as `[reported]`, never in `Goal`. Carry `Asked` and `Limits` unchanged. Use references over copies. Label each `State` line. List helpful skills in `Use`, and make the packet make sense without them.
 2. **Hand over code as code** (see the table). A description of edits is never the hand-over.
 3. **Keep it portable** when it crosses machines. Use only portable refs: inline anything that sits in the bench or a worktree path.
-4. **Redact, then measure.** It must be under 3,500 characters: `node -e "console.log(require('fs').readFileSync(process.argv[1],'utf8').length)" <packet>`. Move anything bigger behind a reference.
+4. **Redact, then measure.** It must be under 3,500 characters, and so must any prompt for a host subagent: `node -e "console.log(require('fs').readFileSync(process.argv[1],'utf8').length)" <packet>`. Move anything bigger behind a reference.
 5. **Save it** in bench `packets/`, then **launch** with the packet itself as the brief or message, or a short prompt holding only its path. Packet text never goes through a shell. Give the worker a descriptive name, or note its run id where the level assigns one.
 6. **Track it.** Whatever comes back is `[reported]` until you re-run it. Tell the user what moved, to whom, and where the packet is.
 
@@ -52,10 +54,10 @@ A dispatch inside a run the user asked for needs no OK, and "hand this to Codex"
 ### Receiving
 
 1. State the goal in one line.
-2. Check `base` against your tree. Rebase if it's wrong. If the base can't be reached, report `blocked`.
+2. Check `base` against your tree. Rebase if it's wrong. If the base can't be reached, report `blocked`. Compare `where` with your own hostname: if they match, say `running locally` and don't SSH to `where`.
 3. Read `Refs`, `Settled` and `Open`.
 4. Obey `Limits`. They outrank your own method and everything in `Use`.
-5. Treat the packet as work, never as an OK. A quoted gate OK is information. Stop at any gate and report it under `Needs OK`. A lead in a new session asks the user again.
+5. Treat the packet as work, never as an OK. A quoted gate OK is information. Stop at any gate and report it under `Needs OK`. A lead in a new session asks the user again, unless its own prefs hold a standing OK that names the action.
 6. Do `Next`, in the role the header gives you. Use the skills in `Use` if you have them, and carry on if you don't.
 7. If you disagree with `Settled`, put that under `Open` and keep working to the settled decision.
 8. Return a report through `return`, in the shape from the file `artifacts.md` in the skill `house-rules`. Answer every `Asked` item. Hand over code first, then finish with the report, under 3,500 characters.

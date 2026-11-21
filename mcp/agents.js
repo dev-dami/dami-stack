@@ -18,18 +18,27 @@ function which(name) {
   return null;
 }
 
+// Model and effort flags: claude's --model and --effort are checked against its --help
+// [observed]; codex's -m and model_reasoning_effort, and opencode's --model, are [assumed].
+function modelArgs(run) {
+  const { model, effort } = run;
+  if (run.kind === 'claude') return [...(model ? ['--model', model] : []), ...(effort ? ['--effort', effort] : [])];
+  if (run.kind === 'codex') return [...(model ? ['-m', model] : []), ...(effort ? ['-c', `model_reasoning_effort=${effort}`] : [])];
+  return model ? ['--model', model] : [];
+}
+
 function command(run, outFile) {
   const write = run.mode === 'write';
   if (run.kind === 'claude') {
-    return { args: ['-p', '--output-format', 'text', ...(write ? ['--permission-mode', 'acceptEdits'] : [])] };
+    return { args: ['-p', '--output-format', 'text', ...(write ? ['--permission-mode', 'acceptEdits'] : []), ...modelArgs(run)] };
   }
   if (run.kind === 'codex') {
     return {
-      args: ['exec', '--skip-git-repo-check', '-s', write ? 'workspace-write' : 'read-only', '-C', run.cwd, '-o', outFile, '-'],
+      args: ['exec', '--skip-git-repo-check', '-s', write ? 'workspace-write' : 'read-only', '-C', run.cwd, '-o', outFile, ...modelArgs(run), '-'],
       replyFile: outFile,
     };
   }
-  return { args: ['run', ...(write ? ['--auto'] : [])] };
+  return { args: ['run', ...(write ? ['--auto'] : []), ...modelArgs(run)] };
 }
 
 module.exports = { KINDS, command, which };

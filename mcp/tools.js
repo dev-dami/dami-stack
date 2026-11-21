@@ -43,6 +43,8 @@ const definitions = [
       host: { type: 'string', description: 'A remote host name from team_host. Always isolated there.' },
       wait_seconds: { type: 'number', description: 'Wait this long for the reply, up to 50. Otherwise use team_run.' },
       timeout_minutes: { type: 'number', description: 'Default 15, up to 60.' },
+      model: { type: 'string', description: 'Model for the run. Always set it.' },
+      effort: { type: 'string', description: 'Reasoning effort, e.g. medium or high.' },
     }, ['to', 'message']),
   },
   {
@@ -180,6 +182,7 @@ function teamHost({ cwd }, args) {
 function ask({ dir, me, cwd }, args) {
   const mode = args.mode || 'read';
   if (!KINDS.includes(args.to)) throw new Error(`to must be one of ${KINDS.join(', ')}.`);
+  if (args.to === 'opencode' && args.effort) throw new Error('opencode takes no effort flag. Leave effort out, or pick it through the model.');
   const host = args.host ? hosts.getHost(args.host) : null;
   if (host && host.kinds && !host.kinds.includes(args.to)) {
     throw new Error(`${args.to} was not on ${host.name} when it was added. Found: ${host.kinds.join(', ') || 'none'}. Re-add the host after installing it.`);
@@ -197,6 +200,11 @@ function ask({ dir, me, cwd }, args) {
     return nextId(state, 'r');
   });
 
+  for (const key of ['model', 'effort']) {
+    if (args[key] !== undefined && !/^[\w.:/[\]-]{1,80}$/.test(String(args[key]))) throw new Error(`${key} holds characters a model name doesn't.`);
+  }
+  const tuning = { ...(args.model ? { model: String(args.model) } : {}), ...(args.effort ? { effort: String(args.effort) } : {}) };
+
   let run;
   const timeoutMinutes = Math.min(args.timeout_minutes || 15, 60);
   if (host) {
@@ -206,13 +214,13 @@ function ask({ dir, me, cwd }, args) {
       kind: args.to, mode, from: me.name, host: host.name, repo, remoteId, localCwd: cwd,
       cwd: `${host.name}:~/${host.root}/${repo}-runs/${remoteId}`,
       branch: mode === 'write' ? `dami/${host.name}-${id}` : null,
-      status: 'running', started: Date.now(), timeoutMinutes,
+      status: 'running', started: Date.now(), timeoutMinutes, ...tuning,
     };
   } else {
     const worktree = args.isolate ? makeWorktree(cwd, dir, id) : null;
     run = {
       kind: args.to, mode, from: me.name, cwd: worktree ? worktree.tree : cwd, branch: worktree && worktree.branch,
-      status: 'running', started: Date.now(), timeoutMinutes,
+      status: 'running', started: Date.now(), timeoutMinutes, ...tuning,
     };
   }
   const runDir = path.join(dir, 'runs', id);

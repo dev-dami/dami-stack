@@ -33,7 +33,7 @@ Takes: a draft.   Gives: a shorter document that behaves the same each run.
 
 7. **Cut.** Skip anything the agent can see for itself in scripts, config, folder layout or help text, unless finding it is expensive. Record what it can't see: unwritten conventions, reasons, gotchas. Re-check old lines too. Adding feels safe and deleting feels risky, so stale text accumulates. Remove any whole sentence the model would behave the same without.
 
-8. **Run it.** Behaviour is the only real test. Give the document to a fresh agent on a real task and watch what it does. Settle any argument about a line the same way. If you can't run it, label the result `[untested]`.
+8. **Run it.** Behaviour is the only real test. Give the document to a fresh agent on a real task and watch what it does. Settle any argument about a line the same way. If you can't run it, label the result `[untested]`. To show that a cut, rewrite or model swap changed nothing, follow the file `eval-run.md` in this skill.
 
 ## Done when
 

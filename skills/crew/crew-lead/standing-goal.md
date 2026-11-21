@@ -4,6 +4,8 @@ For a goal that runs across a very long session. You are the single accountable 
 
 Agree the goal with the user before starting.
 
+Unattended runs: nobody reads your messages until the end. Ending your turn with runs pending stops the work, so wait with the wait move: chunks of 240 s or less, re-checking between them. Questions go through the host's question tool.
+
 ## How to run it
 
 1. **Delegate.** All work goes to workers, in the background. That protects your context and keeps you available to the user. At solo level there are no workers: take one bounded item at a time and update the pages before your context fills.

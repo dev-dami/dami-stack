@@ -18,6 +18,7 @@ process.stdin.on('data', (d) => { input += d; });
 process.stdin.on('end', () => {
   if (input.includes('please crash')) { console.error('boom'); process.exit(3); }
   if (input.includes('please hang')) { setTimeout(() => {}, 60000); return; }
+  if (input.includes('show args')) { console.log('args: ' + process.argv.slice(2).join(' ')); return; }
   console.log('fake reply to: ' + input.split('\\n').pop());
 });`);
 fs.writeFileSync(fakeCli, process.platform === 'win32' ? `@node "${fakeAgent}" %*\r\n` : `#!/bin/sh\nexec node "${fakeAgent}" "$@"\n`);
@@ -63,6 +64,46 @@ test('a client joins and receives the routing map', async () => {
   a.close();
 });
 
+test('Claude Code gets the short worker card, not the routing map', async () => {
+  const a = connect('claude-code');
+  const { result } = await a.ready;
+  assert.doesNotMatch(result.instructions, /## Routes/);
+  assert.match(result.instructions, /For an agent a lead started\./);
+  a.close();
+});
+
+test('the session hook prints the map and prefs, and nothing inside a hub run', () => {
+  const home = fs.mkdtempSync(path.join(tmp, 'home-'));
+  const hook = path.join(__dirname, '..', 'bin', 'session-context.js');
+  const run = (env) => spawnSync(process.execPath, [hook], { env: { ...process.env, HOME: home, USERPROFILE: home, DAMI_RUN: '', ...env }, encoding: 'utf8' });
+  assert.match(run({}).stdout, /## Routes/);
+  assert.doesNotMatch(run({}).stdout, /standing preferences/);
+  fs.mkdirSync(path.join(home, '.dami'));
+  fs.writeFileSync(path.join(home, '.dami', 'prefs.md'), `show: share <file>\n${'x'.repeat(3000)}`);
+  const withPrefs = run({}).stdout;
+  assert.match(withPrefs, /## Your standing preferences\nshow: share <file>/);
+  assert.ok(withPrefs.split('## Your standing preferences')[1].length < 1600);
+  const inRun = run({ DAMI_RUN: 'r1' });
+  assert.strictEqual(inRun.stdout, '');
+  assert.strictEqual(inRun.status, 0);
+});
+
+test('the status line shows team progress from the hub state', () => {
+  const hubBase = path.join(tmp, 'status-hub');
+  const repo = path.join(__dirname, '..');
+  const git = spawnSync('git', ['-C', repo, 'rev-list', '--max-parents=0', 'HEAD'], { encoding: 'utf8' });
+  const root = git.stdout.trim().split(/\r?\n/).sort()[0];
+  if (!root) return;
+  fs.mkdirSync(path.join(hubBase, root.slice(0, 7)), { recursive: true });
+  fs.writeFileSync(path.join(hubBase, root.slice(0, 7), 'state.json'), JSON.stringify({
+    runs: { r1: { status: 'running', started: Date.now() - 5 * 60000 } }, tasks: [{ status: 'done' }, { status: 'blocked' }],
+  }));
+  const line = spawnSync(process.execPath, [path.join(repo, 'bin', 'statusline.js')], {
+    input: JSON.stringify({ cwd: repo }), env: { ...process.env, DAMI_HUB_DIR: hubBase }, encoding: 'utf8',
+  }).stdout;
+  assert.match(line, /1 running \(oldest 5m\), 1 landed, 1 blocked/);
+});
+
 test('two agents exchange messages, and each reads a message once', async () => {
   const a = connect('claude-code');
   const b = connect('codex-mcp-client');
@@ -90,6 +131,16 @@ test('team_ask starts an agent and returns its reply, and to the inbox as well',
   assert.match(run.reply, /fake reply to: what is 2 \+ 2\?/);
   const { messages } = await a.call('team_inbox');
   assert.ok(messages.some((m) => m.from === 'hub' && m.text.includes('fake reply')));
+  a.close();
+});
+
+test('team_ask passes the model and effort it is given, and refuses odd ones', async () => {
+  const a = connect('claude-code');
+  await a.ready;
+  const run = await a.call('team_ask', { to: 'codex', message: 'show args', model: 'gpt-5-mini', effort: 'low', wait_seconds: 20 });
+  assert.match(run.reply, /-m gpt-5-mini -c model_reasoning_effort=low -$/m);
+  assert.match((await a.call('team_ask', { to: 'codex', message: 'x', model: 'a; rm -rf /' })).error, /model holds/);
+  assert.match((await a.call('team_ask', { to: 'opencode', message: 'x', effort: 'high' })).error, /no effort/);
   a.close();
 });
 

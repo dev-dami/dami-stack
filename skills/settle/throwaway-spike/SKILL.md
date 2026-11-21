@@ -1,6 +1,6 @@
 ---
 name: throwaway-spike
-description: "Use when a screen's look or a state model's soundness is unclear and disposable running code would settle it sooner than talk. Skip settled designs. Side-branch commit needs OK."
+description: "Use when a look or state model is unclear and throwaway code settles it faster than talk, and for the Look bar on any user-facing visual. Side-branch commit needs OK."
 user-invocable: false
 ---
 # Throwaway spike
@@ -17,6 +17,8 @@ Team moves: race (for look questions, when the user wants variants from differen
    |---|---|---|
    | Logic | Is this state model sound? | `logic-spike.md` |
    | Look | How should this screen work? | `look-spike.md` |
+
+   Any user-facing visual deliverable, even a settled design, also meets the Look bar in `look-spike.md` before it is reported done. For a settled design the Look bar is the whole job: skip the other steps.
 
    If it could be either and the user is away, infer the kind from nearby code and state your assumption. If the experiment doesn't belong in this session, use the skill `baton-pass` to move it to a side session, and take the verdict back as a note.
 
@@ -38,9 +40,11 @@ Team moves: race (for look questions, when the user wants variants from differen
 
 ## Done when
 
+A settled visual needs only the Look bar line.
+
 - One question was stated, with its kind, and any inferred kind was said out loud.
 - The spike started from one command or double-click, and showed full state after each action.
-- The kind's own Done when is met.
+- The kind's own Done when is met, and any user-facing visual met the Look bar.
 - A verdict answers the question and is recorded with it.
 - The code sits on an unmerged side branch committed with OK, or the user declined and that is stated.
 - Nothing from the spike reached the main line except the decision, and implementing cards reference the branch.

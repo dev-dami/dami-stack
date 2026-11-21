@@ -16,6 +16,7 @@ Run these before saying anything is missing. Each is read-only.
 2. The user's ssh aliases: `ssh -G <alias>` shows where an alias points.
 3. `ssh -o BatchMode=yes -o ConnectTimeout=10 <alias> true`. Success means key-only login already works.
 4. `tailscale status`, to see whether the machine is on their tailnet and online.
+5. Once key login works, probe how agents may run there: `ssh <alias> 'id -u'`, then `ssh <alias> 'claude -p --permission-mode auto "say ok"'`. As root, Claude Code refuses the bypass mode and auto works `[reported]`. `team_host add` records `asRoot` in the host entry; say which modes started.
 
 ## Two paths
 
@@ -52,9 +53,11 @@ When they say it's done, check from step 1 again before you use the host.
 
 - `team_ask {to: claude, host: <name>, message: <packet>}`. A remote run gets the working folder as it is now and runs on its own worktree there. Write mode brings its commit back as a branch. See levels.md in the skill house-rules.
 - `team_host {action: remote_control, name, control: start}` lets the user drive sessions there from claude.ai/code. It runs until stopped.
+- `team_ask` starts Claude in acceptEdits for write and the default mode for read, on any host, and `asRoot` changes neither. A command such a run needs must already be allowed in that machine's Claude settings `[assumed]`. For a run you start over ssh on a root host, use the auto permission mode: it starts as root where bypass doesn't.
 - When the user says stop, stop the hub's Remote Control with `control: stop`, and say whether any other Claude process is still running there.
 
 ## Done when
 
 - A small read run on the host answered `[observed]`, or the user has the one command left to run.
+- Whether agents run as root there, and which permission modes start, is recorded.
 - Nothing on the server changed without their yes, and no password passed through you.

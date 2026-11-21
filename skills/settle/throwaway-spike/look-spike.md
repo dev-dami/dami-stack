@@ -2,6 +2,16 @@
 
 For a question about how a screen should look and work.
 
+## Look bar
+
+For any user-facing visual deliverable, settled or not. Read and update the `taste:` lines in the user's prefs.
+
+1. State the message in one line before any visuals.
+2. A scout gathers 3 to 5 strong real references and names the design language they share.
+3. Two or three workers build different directions, using established motion and component libraries. At solo, build them yourself.
+4. A judge of another kind scores screenshots on message clarity, hierarchy, colour theory, text density, motion, and originality against a template look. With no other kind, use the next rung of the check ladder in the file `levels.md` in the skill `house-rules`, and name it.
+5. Share the winner and the runners-up as screenshots before reporting done.
+
 ## The variants
 
 Build three by default and five at most. Host them on the real page, picked by a URL parameter such as `?variant=b`, so real data and real surroundings stay in view. Isolation hides problems. Add a temporary route only when no host page exists.
@@ -23,6 +33,8 @@ If the user wants variants from different agent kinds, use the race move with on
 Rewrite the winner properly in real code. Promoting spike code as it stands carries its shortcuts into the product.
 
 ## Done when
+
+- For a user-facing visual: the message line, references, judge scores and shared screenshots exist.
 
 - At least three variants run on the real page, or on a temporary route because no host exists, with five at most.
 - Each pair of variants differs on arrangement, priority and primary control.

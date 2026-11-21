@@ -27,7 +27,7 @@ The aim is to remove causes. A repeated warning isn't a fix. This block proposes
 
 4. Place standards with context pressure in mind. Builders are the most squeezed and reviewers the least, so standards are enforced at review. Keep the builder's always-loaded text small.
 5. Rank by severity: what cost the most, and what will recur.
-6. Write each proposal in this form: the event, the cause, the change, its route (`repo-fitting`, `agent-prose`, a standard), and the gate it would need.
+6. Write each proposal in this form: the event, the cause, the change, its route (`repo-fitting`, `agent-prose`, a standard), and the gate it would need. When the user corrected the same ask, channel or style twice, also propose a line for `~/.dami/prefs.md` in its form (`ok:`, `show:`, `taste:`, see the skill `house-rules`); their yes is the OK to write it.
 7. Stop. Present the list and let the user choose.
 
 ## Done when

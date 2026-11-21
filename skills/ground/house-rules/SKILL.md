@@ -54,6 +54,14 @@ Workers and scouts send questions up through `Open` and gate needs through `Need
 - **Test seams.** `work-chart` checks seams with the user once. `failing-test-first` announces seams and continues, and asks only if a seam changes what gets built. Cards carry the agreed seam to workers.
 - **Delegation.** Helpers start with an empty context. Keep exchanges short and pass references, not copies.
 
+## Prefs
+
+`~/.dami/prefs.md` holds the user's standing preferences, one line each. The session hook injects it on Claude Code; elsewhere, read it at session start if it exists. Only the user writes it: propose a line, and their saying yes is the OK to add it.
+
+- `ok: <gate> <scope>`: a standing OK, defined under Standing OK in `gates.md`.
+- `show: <command> <file>`: the delivery channel. When set, share pages, images and video only through it, give the URL it prints, and never publish host artifacts.
+- `taste: <note>`: look and style preferences for visual work.
+
 ## Files
 
 - `gates.md`: what needs the user's OK, how to ask, and the reminder line. Read before anything outward or hard to undo.
@@ -61,7 +69,8 @@ Workers and scouts send questions up through `Open` and gate needs through `Need
 - `deck-adapter.md`: what changes inside a Deck thread. Read it only when `levels.md` sends you there.
 - `artifacts.md`: artifact shapes, packet, report, evidence labels, ref forms, bench layout. Read before writing or receiving any artifact.
 - `routes.md`: routes, the navigator, every block and command. Read when unsure what fits.
-- `routing-map.md`: the always-on summary a session hook injects on Claude Code. Skip it if it is already in your context.
+- `routing-map.md`: the lead's always-on summary. The session hook injects it on Claude Code; the dami hub's MCP server sends it to other clients. Skip it if it is already in your context.
+- `worker.md`: the short card the MCP server sends Claude subagents and hub runs in place of the map: role limits, waits, output caps, the report. Read it when a lead started you.
 - `scripts/bench.js`: run `node <house-rules>/scripts/bench.js` to print the bench path and create the bench. `<house-rules>` is this skill's folder. Expand `~` yourself, because cmd.exe doesn't.
 
 ## Done when
