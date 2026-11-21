@@ -1,6 +1,6 @@
 ---
 name: throwaway-spike
-description: "Use when a screen's look or a state model's soundness is unclear and disposable running code would settle it sooner than talk. Skip settled designs. Side-branch commit needs OK."
+description: "Use when a look or state model is unclear and throwaway code settles it faster than talk, and for any user-facing visual. Side-branch commit needs OK."
 user-invocable: false
 ---
 # Throwaway spike

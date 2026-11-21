@@ -1,6 +1,6 @@
 ---
 name: shared-words
-description: "Use when terms clash or stay vague, a costly-to-reverse decision lands, or you edit the glossary or decision records. Reading them doesn't count. New docs in a repo: offer first."
+description: "Use when terms clash or stay vague, a costly decision lands, or you write the glossary or decision records. New repo docs: offer first."
 user-invocable: false
 ---
 # Shared words

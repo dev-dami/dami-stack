@@ -1,6 +1,6 @@
 ---
 name: baton-pass
-description: "Use when a chunk of work ends, the session runs short, work moves to another agent, tool or person, or you receive a packet. Skip mid-chunk. Starting an unattended agent needs OK."
+description: "Use when work moves to another session, agent, tool or person, the session runs short, or a packet arrives. Unattended agents need OK."
 user-invocable: false
 ---
 # Baton pass
