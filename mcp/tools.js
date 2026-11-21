@@ -43,7 +43,7 @@ const definitions = [
       host: { type: 'string', description: 'A remote host name from team_host. Always isolated there.' },
       wait_seconds: { type: 'number', description: 'Wait this long for the reply, up to 50. Otherwise use team_run.' },
       timeout_minutes: { type: 'number', description: 'Default 15, up to 60.' },
-      model: { type: 'string', description: 'Model for the run. Set it; the CLI default is often the priciest.' },
+      model: { type: 'string', description: 'Model for the run. Always set it.' },
       effort: { type: 'string', description: 'Reasoning effort, e.g. medium or high.' },
     }, ['to', 'message']),
   },
