@@ -10,10 +10,18 @@ const run = (toolInput, raw) => spawnSync(process.execPath, [GUARD], {
   encoding: 'utf8',
 });
 
-test('a call with a timeout over 4.5 minutes is refused with the fix', () => {
-  const r = run({ command: 'npm test', timeout: 600000 });
+test('a long timeout alone is only a ceiling and passes', () => {
+  assert.strictEqual(run({ command: 'npm test', timeout: 600000 }).status, 0);
+});
+
+test('a long literal sleep is refused with the fix', () => {
+  const r = run({ command: 'sleep 600 && cat out.log' });
   assert.strictEqual(r.status, 2);
   assert.match(r.stderr, /Split the wait/);
+});
+
+test('a short for-retry loop with backoff passes', () => {
+  assert.strictEqual(run({ command: 'for i in 1 2 3; do git push && break; sleep 4; done' }).status, 0);
 });
 
 test('a background call passes, whatever its timeout', () => {
