@@ -211,7 +211,7 @@ All 19 are one word, under the plugin's `/dami:` prefix. Skills always contain a
 | `/dami:fix` | `root-cause-hunt` | Hard bug |
 | `/dami:check` | `finish-line` | Verify the current work |
 | `/dami:ship` | `finish-line` > `merge-case` | Check, then draft the PR |
-| `/dami:land` | `finish-line` > `merge-case` > `follow-through.md` | Check, open the PR, drive it to merge-ready |
+| `/dami:land` | `finish-line` > `merge-case` > `follow-through.md` | Check, open the PR, drive it to merge-ready. End with the word `merge` to also merge |
 | `/dami:watch` | `merge-case`, `follow-through.md` | Watch an open PR until merge-ready |
 | `/dami:break` | `finish-line`, `break-lens.md` | Try to break the change; only findings a run proves count |
 | `/dami:catchup` | none, read-only | What changed since your last message, and what waits on you |
