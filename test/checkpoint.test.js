@@ -95,3 +95,34 @@ test('outside git and on an unborn HEAD it exits 0 silently', () => {
   assert.strictEqual(unborn.stdout + unborn.stderr, '');
   fs.rmSync(plain, { recursive: true, force: true });
 });
+
+test('the scratch index lives in the git dir and is gone after a run, and a stale lock is cleared', () => {
+  const dir = repo();
+  const lock = path.join(dir, '.git', 'dami-wip-index.lock');
+  fs.writeFileSync(lock, '');
+  const old = new Date(Date.now() - 5 * 60000);
+  fs.utimesSync(lock, old, old);
+  fs.writeFileSync(path.join(dir, 'a.txt'), 'two\n');
+  assert.strictEqual(hook(dir).status, 0);
+  assert.ok(refSha(dir), 'checkpoint written past the stale lock');
+  assert.ok(!fs.existsSync(path.join(dir, '.git', 'dami-wip-index')));
+  assert.ok(!fs.existsSync(lock));
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('masses of untracked files, or one huge one, skip the checkpoint', () => {
+  const many = repo();
+  fs.mkdirSync(path.join(many, 'build'));
+  for (let i = 0; i < 2001; i += 1) fs.writeFileSync(path.join(many, 'build', `f${i}.txt`), `${i}\n`);
+  assert.strictEqual(hook(many).status, 0);
+  assert.strictEqual(refSha(many), '');
+  fs.rmSync(many, { recursive: true, force: true });
+
+  const huge = repo();
+  fs.writeFileSync(path.join(huge, 'a.txt'), 'two\n');
+  fs.closeSync(fs.openSync(path.join(huge, 'dump.bin'), 'w'));
+  fs.truncateSync(path.join(huge, 'dump.bin'), 51 * 1024 * 1024); // Sparse: big by size, cheap on disk.
+  assert.strictEqual(hook(huge).status, 0);
+  assert.strictEqual(refSha(huge), '');
+  fs.rmSync(huge, { recursive: true, force: true });
+});
