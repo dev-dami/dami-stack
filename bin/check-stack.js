@@ -89,6 +89,15 @@ const workerFile = 'skills/ground/house-rules/worker.md';
 if (!fs.existsSync(abs(workerFile))) fail(workerFile, 'missing');
 else if (fs.statSync(abs(workerFile)).size >= 1500) fail(workerFile, 'must be under 1,500 bytes');
 
+// Every plugin hook runs a script that exists, under a timeout, so none can hang a session.
+const hooksFile = 'hooks/hooks.json';
+const hookGroups = fs.existsSync(abs(hooksFile)) ? Object.values(JSON.parse(fs.readFileSync(abs(hooksFile), 'utf8')).hooks || {}).flat() : [];
+for (const hook of hookGroups.flatMap((group) => group.hooks || [])) {
+  const [, script] = /\$\{CLAUDE_PLUGIN_ROOT\}\/([^"\s]+)/.exec(hook.command || '') || [];
+  if (!script || !fs.existsSync(abs(script))) fail(hooksFile, `"${hook.command}" names no script in the repo`);
+  if (!(hook.timeout > 0 && hook.timeout <= 10)) fail(hooksFile, `"${hook.command}" needs a timeout of 10 seconds or less`);
+}
+
 // Reference forms. The artifact header key "dami: card" has a space after the colon and stays legal.
 const skillFiles = fs.existsSync(abs('skills')) ? walk('skills') : [];
 for (const file of skillFiles) {

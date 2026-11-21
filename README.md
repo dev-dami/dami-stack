@@ -148,6 +148,18 @@ It runs in tmux on the host, in this repo's copy there, and starts each session 
 
 The hub keeps state per repo in `~/.dami/hub`, shared by every worktree. Runs keep going if the agent that asked exits, and the reply waits in its inbox. Two brakes stop agents from starting each other in a loop: at most 3 runs at once, and 24 in ten minutes. A headless agent can't ask you anything, so it reports what it needs instead. `damistack team` shows the current agents, runs, board and claimed files.
 
+## Hooks
+
+The Claude Code plugin adds hooks that make a few prose rules mechanical. Each is plain Node, finishes within 10 seconds, and lets the session carry on if anything goes wrong.
+
+| Hook | When | What it does |
+|---|---|---|
+| `session-context.js` | Session start | Injects the routing map, your prefs, this machine's name, and a `git restore` line when a WIP checkpoint holds work the tree lost |
+| `wait-guard.js` | Before Bash | Refuses a call that would block for more than 4 minutes, so the prompt cache stays warm |
+| `checkpoint.js` | Stop, compaction, session end | Saves uncommitted work, new files included, as a commit under `refs/dami/wip/<branch>`. The worktree, the index and the branch are untouched, and nothing is pushed |
+
+Codex and OpenCode have no such hooks, so the prose rules still apply there.
+
 ## Install
 
 ### Plugin
