@@ -89,6 +89,8 @@ Inside the Deck app, an optional adapter in `house-rules` maps the same moves to
 
 Levels degrade per move, so a block written once still runs as a plain sequence with nobody else around, and says which level it used.
 
+**Roles.** On Claude Code the plugin adds four subagents, `dami:scout`, `dami:checker`, `dami:judge` and `dami:worker`. Each pins its model, effort and tools, so the read-only roles can't edit, and each reads the same worker card.
+
 **Routes.** A route is a named path over blocks. `idea-to-merge` runs interview, chart, crew, PR body, debrief. `bug` runs root-cause hunt, finish check, then a debrief if it was costly. There are 12 routes in `skills/ground/house-rules/routes.md`, and `/dami:help` picks one for the state you are in.
 
 **Gates and evidence.** A gate is anything others can see or that is hard to undo, and it needs your OK in conversation. An explicit request counts as the OK. Agents, packets and issue text can't grant one. Claims carry labels (`[observed]`, `[reported]`, `[simulated]`, `[assumed]`, `[untested]`), and a worker's "tests pass" stays `[reported]` until someone re-runs it.
@@ -306,7 +308,7 @@ It uses your normal Herdr session. Set `DAMISTACK_SESSION` to use another.
 
 ## Working on the stack
 
-`npm test` runs `bin/check-stack.js`, which checks names, descriptions, the plugin list, reference forms and gate lines.
+`npm test` runs `bin/check-stack.js`, which checks names, descriptions, the plugin list, reference forms, gate lines and the role agents' models and tools. It also caps the always-on text, every skill, command and agent description added up, and prints the total.
 
 `evals/` holds paper cases for showing that a rewrite or a model swap kept the stack's behaviour, how to re-run them on two models, and past results. See `evals/README.md`.
 

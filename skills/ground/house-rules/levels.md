@@ -46,15 +46,15 @@ Levels degrade per move, not as a whole.
 
 ## Models
 
-Always pass the model when you start a helper, through `model` on `team_ask`, the host subagent tool's model field, or `--model`. Never inherit the lead's.
+Always set the model when you start a helper. Never inherit the lead's. At host on Claude Code, start the role's plugin agent, which pins model, effort and tools. Through `team_ask`, Herdr or any other subagent tool, pass `model` (or `--model`) from this table.
 
-| Role | Model |
-|---|---|
-| Lead, including its finish-line pass and the message that closes a turn | Opus 5.5, the session model. Never the top-price tier for orchestration or Bash |
-| Implementation worker | Opus 5.5 at medium effort, high for the hardest card |
-| Sub-lead (a lead under the top lead) over mechanical cards only: its packets and status replies | Sonnet 5.5 |
-| Scout, checker of mechanical claims, chores (run, wait, scrape, fetch, rename) | Sonnet 5.5; Haiku 5.5 for pure polling |
-| Judge, root cause | Opus 5.5 at high effort. The top tier only for a named card, short-lived: after two failed runs, or when the user names it |
+| Role | Model | Agent at host |
+|---|---|---|
+| Lead, including its finish-line pass and the message that closes a turn | Opus 5.5, the session model. Never the top-price tier for orchestration or Bash | none |
+| Implementation worker | Opus 5.5 at medium effort, high for the hardest card | `dami:worker` |
+| Sub-lead (a lead under the top lead) over mechanical cards only: its packets and status replies | Sonnet 5.5 | none |
+| Scout, checker of mechanical claims, chores (run, wait, scrape, fetch, rename) | Sonnet 5.5; Haiku 5.5 for pure polling | `dami:scout`, `dami:checker` |
+| Judge, root cause | Opus 5.5 at high effort. The top tier only for a named card, short-lived: after two failed runs, or when the user names it | `dami:judge` |
 
 Cap effort at xhigh, and raise it one step only with a stated reason.
 

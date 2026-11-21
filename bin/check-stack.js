@@ -32,6 +32,19 @@ const skills = dirs('skills').flatMap((set) => dirs(`skills/${set}`).map((name) 
 const skillNames = new Set(skills.map((s) => s.name));
 const commandFiles = fs.existsSync(abs('commands')) ? walk('commands') : [];
 const commandNames = commandFiles.map((f) => path.basename(f, '.md'));
+const agentFiles = fs.existsSync(abs('agents')) ? walk('agents').filter((f) => f.endsWith('.md')) : [];
+const agentNames = agentFiles.map((f) => path.basename(f, '.md'));
+
+// Reads a file's YAML frontmatter as flat key: value lines, unquoting a quoted value.
+const frontmatter = (file) => {
+  const head = /^---\r?\n([\s\S]*?)\r?\n---/.exec(fs.readFileSync(abs(file), 'utf8'));
+  if (!head) return null;
+  const get = (key) => {
+    const value = ((new RegExp(`^${key}:[ \\t]*(.*)$`, 'm').exec(head[1]) || [])[1] || '').trim();
+    return /^(["']).*\1$/.test(value) ? value.slice(1, -1) : value;
+  };
+  return { get, head: head[0] };
+};
 
 // Frontmatter, name, description, gate line.
 for (const { name, dir } of skills) {
@@ -102,7 +115,9 @@ for (const hook of hookGroups.flatMap((group) => group.hooks || [])) {
 const skillFiles = fs.existsSync(abs('skills')) ? walk('skills') : [];
 for (const file of skillFiles) {
   const text = fs.readFileSync(abs(file), 'utf8');
-  if (/\bdami:\S/.test(text)) fail(file, 'uses a prefixed command or skill name');
+  // Plugin agents (dami:scout and the rest) exist only on Claude Code and are named only as the host-level form.
+  for (const [ref, name] of text.matchAll(/\bdami:([a-z0-9-]+)/g)) if (!agentNames.includes(name)) fail(file, `uses a prefixed command or skill name: ${ref}`);
+  if (/\bdami:(?![a-z0-9-])\S/.test(text)) fail(file, 'uses a prefixed command or skill name');
   const depth = file.split('/').length - 4; // Folders below skills/<set>/<skill>/.
   for (const [ups] of text.matchAll(/(?:\.\.\/)+/g)) {
     if (ups.length / 3 > depth) fail(file, `"${ups}" climbs out of its skill`);
@@ -116,10 +131,47 @@ for (const file of [...skillFiles, ...commandFiles]) {
   }
 }
 
+// Role agents: each pins the model its row in the Models table of levels.md names, and the read-only roles can't edit.
+const AGENT_MODELS = { scout: 'sonnet', checker: 'sonnet', judge: 'opus', worker: 'opus' };
+const READ_ONLY_AGENTS = ['scout', 'checker', 'judge'];
+const EDIT_TOOLS = ['Edit', 'Write', 'MultiEdit', 'NotebookEdit'];
+const levelsFile = 'skills/ground/house-rules/levels.md';
+const levels = fs.existsSync(abs(levelsFile)) ? fs.readFileSync(abs(levelsFile), 'utf8') : '';
+const modelsTable = (levels.split(/^## Models$/m)[1] || '').split(/^## /m)[0];
+for (const role of Object.keys(AGENT_MODELS)) if (!agentNames.includes(role)) fail('agents', `no ${role}.md`);
+for (const file of agentFiles) {
+  const name = path.basename(file, '.md');
+  const fm = frontmatter(file);
+  if (!fm) { fail(file, 'no frontmatter'); continue; }
+  if (fm.get('name') !== name) fail(file, `name "${fm.get('name')}" differs from its file name`);
+  const description = fm.get('description');
+  if (!description) fail(file, 'description missing');
+  if (description.length >= 120) fail(file, `description is ${description.length} characters, limit is under 120`);
+  const want = AGENT_MODELS[name];
+  if (!want) { fail(file, 'not a role check-stack knows; add it to AGENT_MODELS'); continue; }
+  if (fm.get('model') !== want) fail(file, `model "${fm.get('model')}" breaks model routing: the ${name} role runs on ${want}`);
+  const row = modelsTable.split('\n').find((line) => line.includes(`\`dami:${name}\``)) || '';
+  const other = want === 'opus' ? 'Sonnet' : 'Opus';
+  if (!row) fail(levelsFile, `Models table has no row naming \`dami:${name}\``);
+  else if (!row.includes(want === 'opus' ? 'Opus' : 'Sonnet') || row.includes(other)) fail(levelsFile, `the row for dami:${name} must name ${want === 'opus' ? 'Opus' : 'Sonnet'} only, to match check-stack's model routing`);
+  if (READ_ONLY_AGENTS.includes(name)) {
+    const tools = fm.get('tools').split(/[\s,]+/).filter(Boolean);
+    if (!tools.length) fail(file, `read-only role lists no tools, so it inherits ${EDIT_TOOLS.join('/')}`);
+    for (const tool of tools) if (EDIT_TOOLS.includes(tool)) fail(file, `read-only role lists ${tool}; it may not have ${EDIT_TOOLS.join('/')}`);
+  }
+}
+
+// Always-on budget: every skill, command and agent description loads in every session.
+// The ceiling is the total on this PR's base commit (3,868) plus 1,200 characters, about 300 tokens.
+const ALWAYS_ON_CHARS = 5068;
+const descriptionFiles = [...skills.map((s) => `${s.dir}/SKILL.md`), ...commandFiles, ...agentFiles].filter((f) => fs.existsSync(abs(f)));
+const alwaysOn = descriptionFiles.reduce((sum, file) => sum + ((frontmatter(file) || { get: () => '' }).get('description').length), 0);
+if (alwaysOn > ALWAYS_ON_CHARS) fail('always-on', `descriptions total ${alwaysOn} characters, over the ceiling of ${ALWAYS_ON_CHARS}. Shorten one, or move detail into the body`);
+
 const only = (process.argv[2] || '').replace(/\\/g, '/').replace(/^\.\//, '');
 const shown = failures.filter((line) => line.startsWith(only));
 if (shown.length) {
   console.error(`check-stack: ${shown.length} failure(s)\n${shown.map((line) => `- ${line}`).join('\n')}`);
   process.exit(1);
 }
-console.log(`check-stack: ok${only ? ` under ${only}` : ''} (${skills.length} skills, ${commandNames.length} commands)`);
+console.log(`check-stack: ok${only ? ` under ${only}` : ''} (${skills.length} skills, ${commandNames.length} commands, ${agentNames.length} agents; always-on ${alwaysOn} of ${ALWAYS_ON_CHARS} characters)`);

@@ -25,10 +25,11 @@
     "dami-stack": "bin/damistack.js"
   },
   "scripts": {
-    "test": "node bin/check-stack.js && node --test test/checkpoint.test.js test/hub.test.js test/pr-watch.test.js test/session-context.test.js test/show-guard.test.js test/statusline.test.js test/stop-check.test.js test/wait-guard.test.js"
+    "test": "node bin/check-stack.js && node --test test/check-stack.test.js test/checkpoint.test.js test/hub.test.js test/pr-watch.test.js test/session-context.test.js test/show-guard.test.js test/statusline.test.js test/stop-check.test.js test/wait-guard.test.js"
   },
   "files": [
     ".claude-plugin",
+    "agents",
     "bin",
     "commands",
     "hooks",
