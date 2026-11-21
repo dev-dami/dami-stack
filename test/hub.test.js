@@ -88,6 +88,22 @@ test('the session hook prints the map and prefs, and nothing inside a hub run', 
   assert.strictEqual(inRun.status, 0);
 });
 
+test('the status line shows team progress from the hub state', () => {
+  const hubBase = path.join(tmp, 'status-hub');
+  const repo = path.join(__dirname, '..');
+  const git = spawnSync('git', ['-C', repo, 'rev-list', '--max-parents=0', 'HEAD'], { encoding: 'utf8' });
+  const root = git.stdout.trim().split(/\r?\n/).sort()[0];
+  if (!root) return;
+  fs.mkdirSync(path.join(hubBase, root.slice(0, 7)), { recursive: true });
+  fs.writeFileSync(path.join(hubBase, root.slice(0, 7), 'state.json'), JSON.stringify({
+    runs: { r1: { status: 'running', started: Date.now() - 5 * 60000 } }, tasks: [{ status: 'done' }, { status: 'blocked' }],
+  }));
+  const line = spawnSync(process.execPath, [path.join(repo, 'bin', 'statusline.js')], {
+    input: JSON.stringify({ cwd: repo }), env: { ...process.env, DAMI_HUB_DIR: hubBase }, encoding: 'utf8',
+  }).stdout;
+  assert.match(line, /1 running \(oldest 5m\), 1 landed, 1 blocked/);
+});
+
 test('two agents exchange messages, and each reads a message once', async () => {
   const a = connect('claude-code');
   const b = connect('codex-mcp-client');

@@ -84,7 +84,7 @@ function addHost(name, ssh, root) {
   const facts = probe(host);
   if (!facts.git) throw new Error(`git is not installed on ${name}.`);
   const hosts = readHosts();
-  hosts[name] = { ssh: host.ssh, root: host.root, kinds: facts.kinds, added: new Date().toISOString() };
+  hosts[name] = { ssh: host.ssh, root: host.root, kinds: facts.kinds, asRoot: facts.user === 'root', added: new Date().toISOString() };
   writeHosts(hosts);
   return { name, ...hosts[name], user: facts.user, hostname: facts.hostname, tmux: facts.tmux };
 }
