@@ -82,22 +82,32 @@ function viewPr(opts) {
   return gh(['pr', 'view', ...(opts.pr ? [opts.pr] : []), ...(opts.repo ? ['--repo', opts.repo] : []), '--json', FIELDS]);
 }
 
-// Unresolved threads from GraphQL; when GraphQL is rate-limited, every review comment from REST.
+// Unresolved threads from GraphQL. When GraphQL is rate-limited, REST stands in: it can't
+// tell resolved threads apart, so it returns each thread's last comment with partial set,
+// and a partial read never counts as ready. Each thread's id is its last comment's id.
 function threads(owner, name, number) {
   const q = gh(['api', 'graphql', '-f', `query=${THREADS}`, '-f', `owner=${owner}`, '-f', `name=${name}`, '-F', `number=${number}`]);
   if (q.ok) {
     const nodes = (((((q.data || {}).data || {}).repository || {}).pullRequest || {}).reviewThreads || {}).nodes || [];
-    return nodes.filter((t) => !t.isResolved).map((t) => {
+    const list = nodes.filter((t) => !t.isResolved).map((t) => {
       const last = ((t.comments || {}).nodes || [])[0] || {};
       return { id: last.databaseId, login: (last.author || {}).login || 'ghost', path: t.path, line: t.line, url: last.url };
     });
+    return { list, partial: false };
   }
   if (!/rate limit/i.test(q.error)) throw new Error(q.error);
   const r = gh(['api', `repos/${owner}/${name}/pulls/${number}/comments?per_page=100`]);
   if (!r.ok) throw new Error(r.error);
-  return (Array.isArray(r.data) ? r.data : []).map((c) => ({
+  const last = new Map(); // Thread root id -> its latest comment. Replies carry in_reply_to_id.
+  for (const c of Array.isArray(r.data) ? r.data : []) {
+    const root = c.in_reply_to_id || c.id;
+    const held = last.get(root);
+    if (!held || c.id > held.id) last.set(root, c);
+  }
+  const list = [...last.values()].map((c) => ({
     id: c.id, login: (c.user || {}).login || 'ghost', path: c.path, line: c.line || c.original_line, url: c.html_url,
   }));
+  return { list, partial: true };
 }
 
 const isBot = (login) => /\[bot\]$/.test(login) || REVIEW_BOTS.includes(login) || STATUS_BOTS.includes(login);
@@ -114,7 +124,7 @@ function checkState(rollup) {
 }
 
 // Turns one snapshot into events, each with a stable id for de-duplication.
-function events(pr, threadList, state) {
+function events(pr, threadList, state, partial = false) {
   const out = [];
   const add = (id, line) => out.push({ id, line, kind: line.split(' ')[0] });
   const head = pr.headRefOid;
@@ -152,7 +162,8 @@ function events(pr, threadList, state) {
   if (merge === 'BEHIND') add(`behind:${head}`, 'behind');
   if (merge === 'DIRTY') add(`dirty:${head}`, 'dirty');
   const ready = green && pr.mergeable === 'MERGEABLE' && !['BEHIND', 'DIRTY'].includes(merge)
-    && pr.reviewDecision !== 'CHANGES_REQUESTED' && !Object.values(verdicts).includes('CHANGES_REQUESTED') && !open.length;
+    && pr.reviewDecision !== 'CHANGES_REQUESTED' && !Object.values(verdicts).includes('CHANGES_REQUESTED') && !open.length
+    && !partial; // Threads unread or read from REST: resolution unknown, so never call it ready.
   if (ready) add(`ready:${head}`, 'ready');
   return { list: out, green, ready };
 }
@@ -210,15 +221,18 @@ async function main() {
 
   let pr = first.data;
   let misses = 0;
+  let warned = false;
   for (;;) {
     let threadList = [];
+    let partial = true;
     try {
-      threadList = threads(owner, name, number);
+      ({ list: threadList, partial } = threads(owner, name, number));
+      if (partial && !warned) { note('threads read from REST, resolution unknown'); warned = true; }
     } catch (err) {
       note(`threads unread this poll: ${err.message}`);
     }
     if (state.head !== pr.headRefOid) state.headSince = Date.now();
-    const snap = events(pr, threadList, state);
+    const snap = events(pr, threadList, state, partial);
     state.head = pr.headRefOid;
     const fresh = snap.list.filter((e) => !seen.has(e.id));
     fresh.forEach((e) => { seen.add(e.id); say(e.line); });

@@ -82,6 +82,21 @@ test('rate-limited GraphQL falls back to REST, and a new review comment is a thr
   assert.match(r.stdout, /^thread reviewer src\/a\.js:12 https:\/\/github\.com\/acme\/widgets\/pull\/7#discussion_r501$/m);
 });
 
+test('REST fallback: a resolved thread the author answered last is quiet, and never ready', () => {
+  const env = setup({
+    view: view(),
+    graphqlError: 'GraphQL: API rate limit exceeded for user ID 1.',
+    rest: [
+      { id: 601, user: { login: 'reviewer' }, path: 'src/a.js', line: 3, html_url: `${URL}#discussion_r601` },
+      { id: 602, in_reply_to_id: 601, user: { login: 'author' }, path: 'src/a.js', line: 3, html_url: `${URL}#discussion_r602` },
+    ],
+  });
+  const r = watch(env, ['7', '--max-seconds', '1', '--interval', '1']);
+  assert.strictEqual(r.status, 3, r.stdout + r.stderr);
+  assert.doesNotMatch(r.stdout, /^(thread|ready)/m);
+  assert.match(r.stderr, /threads read from REST, resolution unknown/);
+});
+
 test('reviews, comments and bots: changes requested exits 1, the author and old bot reviews stay quiet', () => {
   const env = setup({
     view: view({
