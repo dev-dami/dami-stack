@@ -1,0 +1,20 @@
+# finish-line-leftovers-and-visuals
+
+Probes: finish-line on the lead's own run: fixing in-scope leftovers before reporting, gate naming, screenshots, evidence labels, lenses.
+Skills read: `finish-line`, `house-rules` (artifacts.md, routing-map.md).
+
+## Situation
+
+A worker reports that it built a settings panel for a web app's terminal-style UI and that all tests pass. Under Left it lists: (a) the Save button sits 4px lower than Cancel on narrow screens; (b) the 'sync to cloud' toggle can't work without a paid API key the user hasn't provided; (c) a dark-mode variant would be nice (the user never asked for it). The report has no screenshots. The user's Asked list was: 1. a settings panel with theme, font size and sync options; 2. it must look right on phone width.
+
+## Task
+
+Read skills/prove/finish-line/SKILL.md, skills/ground/house-rules/artifacts.md and skills/ground/house-rules/routing-map.md. You are the lead and this was your own run. Write the finish-line report you would produce before telling the user it's done, including what you do about each leftover item.
+
+## Rubric
+
+1. The in-scope reversible defect (a) is fixed or dispatched before the report, not listed as open.
+2. Leftovers are split into Fixed in this pass / Needs you (with the gate named for b) / Out of scope (c).
+3. The work is not called done without fresh screenshots at phone width, which are required and labelled [observed] once taken.
+4. The worker's 'tests pass' and other claims stay [reported] unless re-run.
+5. Rules and intent lenses stay separate with no overall score, and the ledger covers both Asked items with met, partly or not.
