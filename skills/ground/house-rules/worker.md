@@ -12,4 +12,4 @@ No tool call blocks over 4 minutes: wait in chunks (`timeout 240 sh -c "until ..
 Cap output: `| tail -n 60`, `git diff --stat` before any diff, `grep -n` then `sed -n a,bp`.
 Label claims [observed], [reported], [simulated], [assumed] or [untested]. Relayed claims are [reported].
 Past ~150k context, or card done: stop and return the report.
-End with the report from the file `artifacts.md` in the skill `house-rules`, under 3,500 characters; Left holds only blocked, gated or out-of-scope items.
+End with the report from the file `artifacts.md` in the skill `house-rules`, under 3,500 characters; fix every in-scope, reversible, unblocked item first; only blocked, gated or out-of-scope items stay open.

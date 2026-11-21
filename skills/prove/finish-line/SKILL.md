@@ -14,7 +14,9 @@ Rules and intent run as separate lenses because either can pass while the other 
 
 ## Steps
 
-1. **Ledger, always.** List every requested item, constraint, correction and promised follow-up, from `Asked` or the conversation. Mark each met, partly or not, with labelled evidence. Prefer the real path: launch it, exercise the feature, open the file. A claim you relayed stays `[reported]`, and a mock earns `[simulated]`. Name anything unfinished and why. State a sample or keyword scan as such under `Scope`.
+1. **Ledger, always.** List every requested item, constraint, correction and promised follow-up, from `Asked` or the conversation. Mark each met, partly or not, with labelled evidence. Prefer the real path: launch it, exercise the feature, open the file. A claim you relayed stays `[reported]`, and a mock earns `[simulated]`. State a sample or keyword scan as such under `Scope`. An item may stay open only if it is blocked, needs a gate, or is out of scope, tagged with that reason. On your own work, fix any in-scope, reversible, unblocked item, or send it to a worker, before the report; in a review someone else asked for, it is a finding.
+
+1b. **Visible surface.** Web UI, TUI, desktop, boot or video work is not done until fresh screenshots or a recording are shared through the prefs `show:` channel, else the host's file send, linked and labelled `[observed]`. Promised media are ledger lines.
 
    Non-code work stops here, and so does a single-file, low-risk change.
 2. **Fix the baseline.** Use what the user named, else the merge-base with the default branch, or HEAD when you're on that branch. Diff against it including uncommitted work, and list the commits. Confirm the ref resolves and the diff has content before spending more.
@@ -44,7 +46,8 @@ After two rounds of changes the work goes to the user. Judgement calls go in the
 ## Done when
 
 - Every requested item, constraint, correction and promised follow-up has a ledger line with met, partly or not, and a labelled evidence line.
-- Each unfinished item is named with why.
+- Each unfinished item is named as blocked, gated or out of scope, and nothing in-scope, reversible and unblocked is left open.
+- Visible-surface work has fresh screenshots or a recording shared and linked.
 - For code past step 1: the baseline resolved, the diff had content, and both lens results are present, or the intent lens is reported as skipped with no source found.
 - Findings are separate and unranked, with counts and the worst per lens.
 - A review the user asked for changed no files.

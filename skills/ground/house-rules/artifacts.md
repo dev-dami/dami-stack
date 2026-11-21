@@ -1,6 +1,6 @@
 # Artifacts
 
-Six kinds, so any block's output can feed any block's input. Each is Markdown: a header, then fixed sections in the order shown.
+Six kinds, so any block's output can feed any block's input, plus the `status` shape for messages to the user. Each is Markdown: a header, then fixed sections in the order shown.
 
 ## Header
 
@@ -158,11 +158,27 @@ independent: other-kind | same-kind-fresh | self      # for checks only
 ## Scope      full | sample (n of m) | keyword match
 ## Changed    branch, commits
 ## Needs OK   gates hit, for the lead
-## Left       what remains and why
+## Open       questions and blocked items, each with what blocks it
+## Out of scope  what the brief excluded and was left; say if you want it
+## Links      one raw https URL per line: every PR, repo, release, deploy or share link touched
 ## Learned    durable facts: glossary candidates, traps worth pinning
 ```
 
-Also under 3,500 characters whenever it returns as a message or final reply, for the same reason. A checker adds `## Rules findings` and `## Intent findings`, kept separate.
+Also under 3,500 characters whenever it returns as a message or final reply, for the same reason. Nothing in-scope, reversible and unblocked is left open: it gets fixed first. In the lead's report to the user, `Needs OK` and `Open` merge into `## Needs you`, two items at most. Drop empty sections. A checker adds `## Rules findings` and `## Intent findings`, kept separate.
+
+## status
+
+What a lead answers when asked for status, and how every turn that leaves work running ends. No header. Under 800 characters.
+
+```markdown
+Done: yes | no
+## Landed     what landed, with links
+## Running    <item>: <elapsed>, ETA <time>, next checkpoint <hh:mm UTC>
+## Needs you  gates and questions, two at most
+## Links      one raw https URL per line
+```
+
+A status answer reads the board and worker state, and re-runs nothing.
 
 ## Evidence labels
 
