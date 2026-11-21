@@ -347,7 +347,21 @@ test('damistack wait prints each finished run and exits on its status', () => {
   assert.strictEqual(quiet.status, 3);
   assert.strictEqual(quiet.stdout, '');
 
+  // A timeout after some runs finished keeps their news: the exit says what printed.
+  const mixed = wait('r1', 'r2', '--timeout', '1');
+  assert.strictEqual(mixed.status, 0, mixed.stderr);
+  assert.strictEqual(mixed.stdout, 'r1 done dami/r1\n');
+
   assert.strictEqual(wait('r9').status, 2);
   assert.strictEqual(wait('r1', 'r2', '--any').status, 0);
   assert.match(wait('r1', '--timeout', '900').stderr, /240/);
+
+  // With no ids, ghost runs (no live pid, long past their timeout) are not waited on.
+  const deadPid = spawnSync(process.execPath, ['-e', '0']).pid;
+  fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({
+    runs: { r4: { kind: 'codex', status: 'running', pid: deadPid, started: Date.now() - 3 * 3600000, timeoutMinutes: 15 } },
+  }));
+  const ghost = wait('--timeout', '1');
+  assert.strictEqual(ghost.status, 0, ghost.stderr);
+  assert.match(ghost.stderr, /no runs are running/);
 });

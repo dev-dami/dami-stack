@@ -276,7 +276,8 @@ function team() {
 
 // Blocks until hub runs finish, printing `<id> <status> <branch>` for each, so a
 // monitor wakes the lead only when there is news. Exit 0 all printed runs done,
-// 1 any failed, timed out or stopped, 2 unknown id, 3 timeout with none finished.
+// 1 any failed, timed out or stopped, 2 unknown id, 3 timeout with nothing printed.
+// The default id list skips ghost runs (see runAlive in team-state.js).
 function wait() {
   const { hubDir } = require('../mcp/store');
   const args = process.argv.slice(3);
@@ -319,7 +320,7 @@ function wait() {
     const finished = Object.values(printed);
     const code = finished.every((s) => s === 'done') ? 0 : 1;
     if (finished.length === ids.length || (any && finished.length)) return code;
-    if (Date.now() >= deadline) return code === 1 ? 1 : 3;
+    if (Date.now() >= deadline) return finished.length ? code : 3;
     sleep(Math.min(5000, deadline - Date.now()));
   }
 }
