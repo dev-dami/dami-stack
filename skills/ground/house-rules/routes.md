@@ -76,6 +76,8 @@ Claude Code users can also type a one-word command under the plugin's prefix. Ea
 | `fix` | `root-cause-hunt` | Hard bug |
 | `check` | `finish-line` | Verify the current work |
 | `ship` | `finish-line` > `merge-case` | Check, then draft the PR |
+| `land` | `finish-line` > `merge-case` > `follow-through.md` | Check, open the PR, drive it to merge-ready |
+| `watch` | `merge-case` (`follow-through.md`) | Watch an open PR until merge-ready |
 | `pass` | `baton-pass` | Hand work on |
 | `debrief` | `after-action` | Session review |
 | `learn` | `purposeful-tutor` | Tutoring |

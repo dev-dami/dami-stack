@@ -233,7 +233,7 @@ test('commands are prompts for other clients, and not for Claude Code', async ()
   const codex = connect('codex-mcp-client');
   const claude = connect('claude-code');
   await Promise.all([codex.ready, claude.ready]);
-  assert.strictEqual((await codex.request('prompts/list')).result.prompts.length, 15);
+  assert.strictEqual((await codex.request('prompts/list')).result.prompts.length, 17);
   assert.strictEqual((await claude.request('prompts/list')).result.prompts.length, 0);
   const prompt = await codex.request('prompts/get', { name: 'fix', arguments: { focus: 'the flaky export' } });
   assert.match(prompt.result.messages[0].content.text, /the flaky export/);

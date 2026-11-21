@@ -1,6 +1,6 @@
 # Artifacts
 
-Six kinds, so any block's output can feed any block's input, plus the `status` shape for messages to the user. Each is Markdown: a header, then fixed sections in the order shown.
+Six kinds, so any block's output can feed any block's input, plus the `status` shape for messages to the user and the `comment` shape for anything posted for them. Each is Markdown: a header, then fixed sections in the order shown.
 
 ## Header
 
@@ -187,6 +187,26 @@ Done: yes | no
 ```
 
 A status answer reads the board and worker state, and re-runs nothing.
+
+## comment
+
+Anything posted for the user on GitHub or a tracker: a review reply, a PR or issue comment. No header.
+
+```markdown
+> Posted by an AI agent (Opus 5.5) for the PR author.
+
+Fixed in a1b2c3d: a sixth login attempt now gets 429.
+- `sixth attempt returns 429` passes. [observed] `npm test -- limit`
+- The limit is per IP. [observed] src/limit.ts:14
+Judgement: a per-account limit fits better in its own PR.
+```
+
+- The first line is that notice, with your model, naming who it's for: the PR author, or the maintainer at intake.
+- Then the conclusion. Each claim carries an evidence label and a cite: a commit sha, a file:line, or a command and its output.
+- Verified facts stand apart from judgement, which goes on its own `Judgement:` line.
+- No filler: no thanks, no praise of the finding, no restating it.
+- Scan for secrets and personal data before posting.
+- After posting, confirm GitHub returned the comment URL. Resolve a thread only after its reply posted.
 
 ## Evidence labels
 

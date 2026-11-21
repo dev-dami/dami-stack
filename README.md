@@ -194,7 +194,7 @@ They read the skills from `~/.agents/skills` and join the hub as an MCP server. 
 
 ## Commands
 
-All 15 are one word, under the plugin's `/dami:` prefix. Skills always contain a hyphen, so the two can't collide.
+All 17 are one word, under the plugin's `/dami:` prefix. Skills always contain a hyphen, so the two can't collide.
 
 | Command | Goes to | For |
 |---|---|---|
@@ -209,6 +209,8 @@ All 15 are one word, under the plugin's `/dami:` prefix. Skills always contain a
 | `/dami:fix` | `root-cause-hunt` | Hard bug |
 | `/dami:check` | `finish-line` | Verify the current work |
 | `/dami:ship` | `finish-line` > `merge-case` | Check, then draft the PR |
+| `/dami:land` | `finish-line` > `merge-case` > `follow-through.md` | Check, open the PR, drive it to merge-ready |
+| `/dami:watch` | `merge-case`, `follow-through.md` | Watch an open PR until merge-ready |
 | `/dami:pass` | `baton-pass` | Hand work on |
 | `/dami:debrief` | `after-action` | Session review |
 | `/dami:learn` | `purposeful-tutor` | Tutoring |
@@ -309,5 +311,7 @@ It uses your normal Herdr session. Set `DAMISTACK_SESSION` to use another.
 ## Credits
 
 Designed and written for Damilare Osibanjo. Inspired by [Matt Pocock's skills](https://github.com/mattpocock/skills).
+
+`pr-watch.js` and `follow-through.md` in `merge-case` closely adapt the design of the babysit-pr skill and its pr-wait script from [tstack](https://github.com/t3dotgg/tstack) (MIT, (c) 2026 Theo Browne).
 
 Deep modules come from John Ousterhout, seams from Michael Feathers, red-green testing from Kent Beck, code smells from Martin Fowler, tracer bullets from Hunt and Thomas, and decision records from Michael Nygard.
