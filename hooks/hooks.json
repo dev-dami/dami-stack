@@ -40,6 +40,11 @@
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/checkpoint.js\"",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/stop-check.js\"",
+            "timeout": 10
           }
         ]
       }

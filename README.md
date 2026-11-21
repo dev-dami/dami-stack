@@ -157,6 +157,7 @@ The Claude Code plugin adds hooks that make a few prose rules mechanical. Each i
 | `session-context.js` | Session start | Injects the routing map, your prefs, this machine's name, and a `git restore` line when a WIP checkpoint holds work the tree lost |
 | `wait-guard.js` | Before Bash | Refuses a call that would block for more than 4 minutes, so the prompt cache stays warm |
 | `show-guard.js` | Before an artifact tool | When your prefs have a `show:` line, refuses publishing a host artifact and names your share command. Reading, opening and deleting still work |
+| `stop-check.js` | Stop | Asks once for the status shape when work still runs and the message has no `Done:` line, and for raw URLs when a GitHub link hides behind markdown text. `DAMI_STOP_CHECK=0` turns it off |
 | `checkpoint.js` | Stop, compaction, session end | Saves uncommitted work, new files included, as a commit under `refs/dami/wip/<branch>`. The worktree, the index and the branch are untouched, and nothing is pushed |
 
 Codex and OpenCode have no such hooks, so the prose rules still apply there.
