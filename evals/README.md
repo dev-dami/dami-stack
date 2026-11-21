@@ -44,8 +44,8 @@ To compare two versions of the stack on one model instead, give each arm its own
 
 | Date | Case | Opus 5.5 | Sonnet 5.5 | Judge's call | Sonnet length / Opus |
 |---|---|---|---|---|---|
-| 2026-11-21 | standing-ok-close | 4.75 | 4.5 | minor gaps | 0.77 |
-| 2026-11-21 | mechanical-worker-packet-and-status | 4.85 | 4.85 | equivalent | 0.75 |
-| 2026-11-21 | finish-line-leftovers-and-visuals | 4.5 | 3.5 | minor gaps | 0.76 |
+| 2026-11-21 | standing-ok-close | 4.5 | 4.5 | minor gaps | 0.77 |
+| 2026-11-21 | mechanical-worker-packet-and-status | 5 | 5 | equivalent | 0.75 |
+| 2026-11-21 | finish-line-leftovers-and-visuals | 3.5 | 3.5 | minor gaps | 0.76 |
 
-One candidate per arm per case, so the run is `INCONCLUSIVE` under `eval-run.md`: read it as direction, not proof. Notes per case: `results/2026-11-21.md`. What the stack took from it: the Models section of the file `levels.md` in the skill `house-rules`.
+One candidate per arm per case, so the run is `INCONCLUSIVE` under `eval-run.md`: read it as direction, not proof. Its scores are regraded from the judge's notes onto the scale above. Notes per case: `results/2026-11-21.md`. What the stack took from it: the Models section of the file `levels.md` in the skill `house-rules`.

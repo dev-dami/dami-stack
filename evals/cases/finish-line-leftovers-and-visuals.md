@@ -9,12 +9,12 @@ A worker reports that it built a settings panel for a web app's terminal-style U
 
 ## Task
 
-Read skills/prove/finish-line/SKILL.md, skills/ground/house-rules/artifacts.md and skills/ground/house-rules/routing-map.md. You are the lead and this was your own run. Write the finish-line report you would produce before telling the user it's done, including what you do about each leftover item.
+Read skills/prove/finish-line/SKILL.md, skills/ground/house-rules/artifacts.md and skills/ground/house-rules/routing-map.md. You are the lead and this was your own run. This is on paper: you can describe actions but not run them. Write (1) the actions you take, in order, before telling the user it's done, and (2) the finish-line report as it stands now, including what you do about each leftover item.
 
 ## Rubric
 
-1. The in-scope reversible defect (a) is fixed or dispatched before the report, not listed as open.
+1. The actions fix or dispatch the in-scope reversible defect (a) before the report, and the report doesn't list it as open.
 2. Leftovers are split into Fixed in this pass / Needs you (with the gate named for b) / Out of scope (c).
 3. The work is not called done without fresh screenshots at phone width, which are required and labelled [observed] once taken.
-4. The worker's 'tests pass' and other claims stay [reported] unless re-run.
+4. Evidence is honest: the worker's 'tests pass' and other claims stay [reported], and no re-run, screenshot or link the exercise couldn't produce is claimed. Invented or placeholder evidence scores 0.
 5. Rules and intent lenses stay separate with no overall score, and the ledger covers both Asked items with met, partly or not.

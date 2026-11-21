@@ -61,8 +61,8 @@ Cap effort at xhigh, and raise it one step only with a stated reason.
 Why the Sonnet split falls where it does: three paper cases put each model in the lead's seat, one run per model, so the result is `INCONCLUSIVE` under the file `eval-run.md` in the skill `agent-prose` and reads as a leaning only.
 
 - A packet for a mechanical card plus a one-word status reply: Sonnet matched Opus, in a quarter fewer characters.
-- Closing a turn under a standing OK: Sonnet came close, but asked a question the prefs already settled.
-- Finish-line on its own run: Sonnet trailed by a point out of five. It planned an in-scope fix instead of making it, named no gate and skipped the lenses.
+- Closing a turn under a standing OK: a tie. Sonnet asked a question the prefs already settled; Opus left the merge decision outside `Needs you`.
+- Finish-line on its own run: a tie once invented evidence stopped scoring. Sonnet planned an in-scope fix instead of making it, named no gate and skipped the lenses; Opus claimed checks and screenshots it couldn't have made.
 
 No case ran Sonnet as a scout, checker or chore worker, so that row stays `[untested]`. Move a row only on a new eval run.
 
