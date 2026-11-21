@@ -29,7 +29,7 @@ Push the fix before the reply, so the reply can cite its sha. Replies use the co
 
 Wait with `scripts/pr-watch.js` in this skill, by its absolute path. Write no polling loop of your own.
 
-- Claude Code: run `node <path>/pr-watch.js <pr> --max-seconds 0` under the Monitor tool, so each event line wakes you.
+- Claude Code: run `node <path>/pr-watch.js <pr> --max-seconds 0` under the Monitor tool, so each event line wakes you. Set `timeout_ms` to 1800000 and re-arm on expiry.
 - Elsewhere: run it in Bash with its 240 s default, and run it again on exit 3.
 
 Exit 0: the `--until` condition holds, or the PR merged. 1: an event needs action. 2: bad input, a gh error, or another watcher already holds the PR. 3: nothing new. Start it again after each push. A wake that needs nothing ends the turn silently, with no "still waiting".
