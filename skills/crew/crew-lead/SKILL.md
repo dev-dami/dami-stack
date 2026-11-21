@@ -40,7 +40,7 @@ For open goals.
 
 1. State a stop bar (a score, a size, a reviewer verdict) or a budget.
 2. Run N parallel attempts with different stances, N being 3 at hub, through the race move.
-3. An independent judge, or a bench, picks the best. Land it once it passes the check in step 7. If none passes, land nothing.
+3. An independent judge, or a bench, picks the best. For a review goal the judge is the file `break-lens.md` in the skill `finish-line`. Land it once it passes the check in step 7. If none passes, land nothing.
 4. Repeat until the bar or the budget is reached.
 
 Never advise abandoning a goal before one parallel round has run, and put any stop advice next to that round's numbers.
@@ -82,7 +82,8 @@ A refusal or a stopped run comes back to the lead with its reason.
 |---|---|
 | Too many active agents | Wait for a result, then dispatch again. This isn't a failure |
 | A loop brake, pause or hold | Dispatch nothing. Report what has landed and what remains, and wait for the user |
-| Timed out or over budget | Its agent was stopped mid-turn. Split the card, or re-dispatch with more budget. A checker that timed out or sent no report has not approved |
+| Timed out or over budget | Its agent was stopped mid-turn. Split the card, or re-dispatch with more budget |
+| Checker timed out or sent nothing | Not an approval. Re-dispatch, or drop a rung of the check ladder |
 | Two rounds of changes spent | Show the user the notes and leave the retry to them |
 | Ended with no report | Read its last reply, then steer it or re-dispatch with a sharper packet |
 | Failed | Fix the packet or reslice the card |

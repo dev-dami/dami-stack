@@ -318,4 +318,6 @@ Designed and written for Damilare Osibanjo. Inspired by [Matt Pocock's skills](h
 
 `pr-watch.js` and `follow-through.md` in `merge-case` closely adapt the design of the babysit-pr skill and its pr-wait script from [tstack](https://github.com/t3dotgg/tstack) (MIT, (c) 2026 Theo Browne).
 
+`break-lens.md` in `finish-line` closely adapts the interrogate and blast-radius skills from [pstack](https://github.com/cursor/plugins/tree/main/pstack) (MIT, (c) 2026 Lauren Tan).
+
 Deep modules come from John Ousterhout, seams from Michael Feathers, red-green testing from Kent Beck, code smells from Martin Fowler, tracer bullets from Hunt and Thomas, and decision records from Michael Nygard.
