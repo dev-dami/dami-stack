@@ -119,6 +119,7 @@ to: any | codex | claude | opencode | next-session | <person>
 role: worker | scout | checker | lead
 repo: 3f9a1c2
 base: <branch>@<sha>
+where: <hostname>       # the machine the sender ran on
 return: final message | file:<path>
 model: <model>          # optional: see Models in levels.md
 effort: <level>         # optional
@@ -133,6 +134,11 @@ effort: <level>         # optional
 ## Next      the first concrete action
 ## Use       skills that help: `failing-test-first`, `finish-line`
 ```
+
+Say the outcome, not the method:
+
+- BAD `Goal: implement rate limiting using a token bucket in middleware.ts`
+- GOOD `Goal: a sixth login attempt per IP per minute gets 429`
 
 Packet rules:
 
