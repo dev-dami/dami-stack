@@ -23,6 +23,8 @@ With a situation, print only the matching route and command from the guide, in t
 - `/dami:ship` check, then draft the PR
 - `/dami:land` check, open the PR and drive it to merge-ready
 - `/dami:watch` watch an open PR until merge-ready
+- `/dami:break` try to break the change, keeping only findings a run proves
+- `/dami:catchup` what changed since your last message, and what waits on you
 - `/dami:pass` hand work to another agent, session or person
 - `/dami:debrief` turn a rough session into lasting fixes
 - `/dami:learn` learn a topic over several sessions

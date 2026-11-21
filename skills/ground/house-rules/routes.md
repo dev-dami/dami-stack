@@ -78,6 +78,9 @@ Claude Code users can also type a one-word command under the plugin's prefix. Ea
 | `ship` | `finish-line` > `merge-case` | Check, then draft the PR |
 | `land` | `finish-line` > `merge-case` > `follow-through.md` | Check, open the PR, drive it to merge-ready |
 | `watch` | `merge-case` (`follow-through.md`) | Watch an open PR until merge-ready |
+| `break` | `finish-line` (`break-lens.md`) | Run-proven adversarial review |
+| `catchup` | none, read-only | What changed since your last message, and what waits on you |
 | `pass` | `baton-pass` | Hand work on |
 | `debrief` | `after-action` | Session review |
 | `learn` | `purposeful-tutor` | Tutoring |
+| `connect` | `host-connect` | Connect a VPS so agents can run there |
