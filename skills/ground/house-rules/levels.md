@@ -38,7 +38,7 @@ Levels degrade per move, not as a whole.
 | race | several isolated `team_ask` runs on one brief, compare branches, the user keeps one | N workers, isolated, compare diffs | N workspaces | one attempt, and say no race ran |
 | check | `team_ask` to another kind, read mode | fresh subagent, or an other-kind workspace if Herdr is up | other-kind workspace | clean second pass, labelled `self` |
 | steer | `team_send` to a running agent. A headless run doesn't read its inbox, so stop it and re-ask with a better packet | subagent message, if supported | none | none |
-| wait | `team_run {id, wait_seconds: 50}`, repeated | a background run with the host's monitor tool, or `timeout 240 sh -c "until <done>; do sleep 15; done"` (on cmd.exe or PowerShell, the same loop in `node -e`), repeated | same as host | same as host |
+| wait | On Claude Code, Monitor on the Wake line team_ask returns; elsewhere `team_run {id, wait_seconds: 50}`, repeated | a background run under the host's Monitor tool, or `timeout 240 sh -c "until <done>; do sleep 15; done"` (on cmd.exe or PowerShell, the same loop in `node -e`), repeated | same as host | same as host |
 | remember | `note` | bench `notes/` | bench `notes/` | bench `notes/` |
 | budget | `timeout_minutes` on `team_ask` | stop condition in the brief, unenforced | same | same |
 | look back | session logs | session logs | session logs | session logs |
@@ -82,6 +82,7 @@ Plan around these.
 
 How runs behave:
 
+- A wake that needs no action ends the turn silently.
 - Headless agents can't ask the user anything. The packet must hold all they need. A question or a gate comes back in the reply, under `Open` or `Needs OK`.
 - `team_ask` with write mode and no isolate edits the shared tree, so claim files with `lease` first.
 - A run may not have the hub's tools, because each client registers the server itself. The lead holds a worker's leases and updates `board` for it.

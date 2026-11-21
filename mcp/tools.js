@@ -340,8 +340,16 @@ function skills(_ctx, { name, file }) {
   return { name, file: file || 'SKILL.md', text: fs.readFileSync(target, 'utf8') };
 }
 
+// The text a client sees. A started run adds the exact command that blocks until it finishes,
+// so the lead can wait under a monitor instead of polling team_run.
+function format(name, result) {
+  const text = JSON.stringify(result);
+  if (name !== 'team_ask' || !result || result.status !== 'running') return text;
+  return `${text}\nWake: node "${path.join(STACK, 'bin', 'damistack.js')}" wait ${result.id}`;
+}
+
 const handlers = {
   team_roster: roster, team_send: send, team_inbox: inbox, team_ask: ask, team_run: teamRun, team_host: teamHost, board, lease, note, skills,
 };
 
-module.exports = { STACK, definitions, handlers };
+module.exports = { STACK, definitions, format, handlers };

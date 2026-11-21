@@ -287,6 +287,8 @@ damistack <folder>     Open dami stack in that folder
 damistack status       Check Claude Code, Herdr, Codex and OpenCode
 damistack team         See this repo's agents, runs, board and claimed files
 damistack link         Share the skills and hub with Codex and OpenCode
+damistack wait [ids] [--any|--all] [--timeout S]
+                       Block until hub runs finish, one line each. Default: all running runs, 240 s
 damistack mcp          Print hub settings for any other MCP client
 damistack connect [name]              Walk through connecting a VPS: Tailscale, key, Claude Code
 damistack host add <name> [ssh]       Let the hub run agents on a remote machine

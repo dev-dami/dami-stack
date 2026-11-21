@@ -51,7 +51,7 @@ Never advise abandoning a goal before one parallel round has run, and put any st
 - One card per worker. At about 150k context, or at card end, a worker returns its report, and the next card starts a fresh worker from a packet, never a resumed one.
 - Commit the integration branch after every landing, and write a one-line bench state note before any long wait. If the folder isn't a git repo, `git init` before the run.
 - End every lead turn with the `status` shape from the file `artifacts.md` in the skill `house-rules`.
-- When the run finishes, notify the user unasked, through the host's push or message tool.
+- When a long run lands or fails and the user may be away, send one push (PushNotification on Claude Code) under 200 characters.
 
 ## The wave rule
 
