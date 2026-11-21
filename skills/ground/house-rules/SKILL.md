@@ -54,6 +54,14 @@ Workers and scouts send questions up through `Open` and gate needs through `Need
 - **Test seams.** `work-chart` checks seams with the user once. `failing-test-first` announces seams and continues, and asks only if a seam changes what gets built. Cards carry the agreed seam to workers.
 - **Delegation.** Helpers start with an empty context. Keep exchanges short and pass references, not copies.
 
+## Prefs
+
+`~/.dami/prefs.md` holds the user's standing preferences, one line each. The session hook injects it on Claude Code; elsewhere, read it at session start if it exists. Only the user writes it: propose a line, and their saying yes is the OK to add it.
+
+- `ok: <gate> <scope>`: a standing OK, defined under Standing OK in `gates.md`.
+- `show: <command> <file>`: the delivery channel. When set, share pages, images and video only through it, give the URL it prints, and never publish host artifacts.
+- `taste: <note>`: look and style preferences for visual work.
+
 ## Files
 
 - `gates.md`: what needs the user's OK, how to ask, and the reminder line. Read before anything outward or hard to undo.

@@ -78,6 +78,12 @@ else {
   for (const must of ['4 minutes', 'Needs you']) if (!map.includes(must)) fail(mapFile, `lost the rule naming "${must}"`);
 }
 
+// Standing OKs exist, and merge stays out of them.
+const gatesFile = 'skills/ground/house-rules/gates.md';
+const gates = fs.existsSync(abs(gatesFile)) ? fs.readFileSync(abs(gatesFile), 'utf8') : '';
+if (!gates.includes('## Standing OK')) fail(gatesFile, 'lacks the ## Standing OK section');
+else if (!/Merge[^.\n]*can't be standing/.test(gates.split('## Standing OK')[1])) fail(gatesFile, "Standing OK doesn't say merge can't be standing");
+
 // The worker card that the MCP server sends Claude subagents and hub runs.
 const workerFile = 'skills/ground/house-rules/worker.md';
 if (!fs.existsSync(abs(workerFile))) fail(workerFile, 'missing');
