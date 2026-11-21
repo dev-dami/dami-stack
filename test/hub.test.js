@@ -140,6 +140,7 @@ test('team_ask passes the model and effort it is given, and refuses odd ones', a
   const run = await a.call('team_ask', { to: 'codex', message: 'show args', model: 'gpt-5-mini', effort: 'low', wait_seconds: 20 });
   assert.match(run.reply, /-m gpt-5-mini -c model_reasoning_effort=low -$/m);
   assert.match((await a.call('team_ask', { to: 'codex', message: 'x', model: 'a; rm -rf /' })).error, /model holds/);
+  assert.match((await a.call('team_ask', { to: 'opencode', message: 'x', effort: 'high' })).error, /no effort/);
   a.close();
 });
 

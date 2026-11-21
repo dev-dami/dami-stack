@@ -182,6 +182,7 @@ function teamHost({ cwd }, args) {
 function ask({ dir, me, cwd }, args) {
   const mode = args.mode || 'read';
   if (!KINDS.includes(args.to)) throw new Error(`to must be one of ${KINDS.join(', ')}.`);
+  if (args.to === 'opencode' && args.effort) throw new Error('opencode takes no effort flag. Leave effort out, or pick it through the model.');
   const host = args.host ? hosts.getHost(args.host) : null;
   if (host && host.kinds && !host.kinds.includes(args.to)) {
     throw new Error(`${args.to} was not on ${host.name} when it was added. Found: ${host.kinds.join(', ') || 'none'}. Re-add the host after installing it.`);

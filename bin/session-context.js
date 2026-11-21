@@ -15,7 +15,9 @@ if (!process.env.DAMI_RUN) {
     process.stdout.write(fs.readFileSync(MAP, 'utf8'));
   } catch { /* no map, no output */ }
   try {
-    const prefs = fs.readFileSync(path.join(os.homedir(), '.dami', 'prefs.md'), 'utf8').trim().slice(0, PREFS_LIMIT);
+    // Keep whole lines only: a cut grant line could read wider than the user wrote it.
+    let prefs = fs.readFileSync(path.join(os.homedir(), '.dami', 'prefs.md'), 'utf8').trim();
+    if (prefs.length > PREFS_LIMIT) prefs = prefs.slice(0, Math.max(prefs.lastIndexOf('\n', PREFS_LIMIT), 0)).trimEnd();
     if (prefs) process.stdout.write(`\n## Your standing preferences\n${prefs}\n`);
   } catch { /* no prefs file */ }
 }
